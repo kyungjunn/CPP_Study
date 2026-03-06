@@ -54,11 +54,11 @@ int main()
 	}
 	else if (MySum >= AISum)
 	{
-		cout << "플레이어가 승리!!";
+		cout << "플레이어 승리!!";
 	}
-	else if (MySum < AISum)
+	else
 	{
-		cout << "플레이어가 패배..";
+		cout << "플레이어 패배..";
 	}
 	
 	
