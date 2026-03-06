@@ -7,7 +7,7 @@ int AICard[4];
 
 int MySum = 0;
 int AISum = 0;
-int RandomCard = 0;
+int card = 0;
 
 // 카드 뽑기
 int DrawCard()
@@ -25,9 +25,9 @@ int main()
 	cout << "플레이어 카드 : ";
 	for (int i = 1; i <= 3; ++i)
 	{
-		RandomCard = DrawCard();
-		MyCard[i] = RandomCard;
-		MySum += RandomCard;
+		card = DrawCard();
+		MyCard[i] = card;
+		MySum += card;
 
 		cout << MyCard[i] << " ";	
 	}
@@ -36,9 +36,9 @@ int main()
 	cout << "컴퓨터 카드 : ";
 	for (int i = 1; i <= 3; ++i)
 	{
-		RandomCard = DrawCard();
-		AICard[i] = RandomCard;
-		AISum += RandomCard;
+		card = DrawCard();
+		AICard[i] = card;
+		AISum += card;
 
 		cout << AICard[i] << " ";
 	}
