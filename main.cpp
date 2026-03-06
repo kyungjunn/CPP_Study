@@ -1,65 +1,164 @@
-#include <iostream>
-#include <cstdlib>
+ï»¿#include <iostream>
+#include <string>
+
+#define CARDSIZE	52
+
 using namespace std;
 
-int MyCard[4];
-int AICard[4];
+//Heart
+//0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12,
+//Spade
+//13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25,
+//Diamond
+//26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38,
+//Clover
+//39, 40, 41, 42, 43, 44, 45, 46, 47, 48, 49, 50, 51,
 
-int MySum = 0;
-int AISum = 0;
-int Card = 0;
+// ë˜‘ê°™ì€ ì¹´ë“œê°€ ë‚˜ì˜¤ë©´ ì•ˆë¨.
 
-// Ä«µå »Ì±â
-int DrawCard()
+int Player[CARDSIZE];
+int Cards[CARDSIZE] = { 0, };
+string CardType[4] = { "Heart", "Spade", "Diamond", "Clover" };
+
+int ComputerCard[3];
+int PlayerCard[3];
+//PreProcess
+int ComputerScore[3] = { 0, };
+int PlayerScore[3] = { 0, };
+
+int TotalComputerScore;
+int TotalPlayerScore;
+
+
+string DrawShape(int CardNumber)
 {
-	int Randomcard = rand() % 10 + 1;
-	return Randomcard;
+	int Shape = (CardNumber % 13 + 1);
+
+	if (Shape == 11)
+	{
+		return "J";
+	}
+	else if (Shape == 12)
+	{
+		return "Q";
+	}
+	else if (Shape == 13)
+	{
+		return "K";
+	}
+	else if (Shape == 1)
+	{
+		return "A";
+	}
+
+	return to_string(Shape);
 }
 
-int main()
+
+void Init()
 {
-	// srand() -> rand()ÇÔ¼ö¸¦ ÃÊ±âÈ­ÇÏ´Â ÇÔ¼ö.
-	// ½Ã°£¿¡ ºñ·ÊÇØ¼­ ¼ýÀÚµµ °è¼Ó ÃÊ±âÈ­µÇµµ·Ï.
-	srand(time(NULL)); 
-
-	cout << "ÇÃ·¹ÀÌ¾î Ä«µå : ";
-	for (int i = 1; i <= 3; ++i)
+	for (int i = 0; i < CARDSIZE; ++i)
 	{
-		Card = DrawCard();
-		MyCard[i] = Card;
-		MySum += Card;
-
-		cout << MyCard[i] << " ";	
+		Cards[i] = i;
 	}
-	cout << '\n';
 
-	cout << "ÄÄÇ»ÅÍ Ä«µå : ";
-	for (int i = 1; i <= 3; ++i)
-	{
-		Card = DrawCard();
-		AICard[i] = Card;
-		AISum += Card;
+	srand((unsigned int)time(nullptr));
+}
 
-		cout << AICard[i] << " ";
-	}
-	cout << '\n';
+void Shuffle()
+{
+	//Random(ë‚œìˆ˜) ë‘ ê°œ ì„ íƒí•´ì„œ êµí™˜(swap)
+	for (int i = 0; i < CARDSIZE * 10; ++i)
+	{
+		int FirstIndex = rand() % CARDSIZE;
+		int SecondIndex = rand() % CARDSIZE;
+		int Temp = Cards[FirstIndex];
 
-	if (MySum > 21)
-	{
-		cout << "ÇÃ·¹ÀÌ¾î°¡ 21 ÃÊ°ú!! ÆÐ¹è..";
+		Cards[FirstIndex] = Cards[SecondIndex];
+		Cards[SecondIndex] = Temp;
 	}
-	else if (AISum > 21)
+}
+
+void Deal()
+{
+	//Deal
+	//0, 1
+	//2, 3
+	//4, 5
+	for (int i = 0; i < 3; ++i)
 	{
-		cout << "ÄÄÇ»ÅÍ°¡ 21 ÃÊ°ú!! ½Â¸®!!";
+		ComputerCard[i] = Cards[i * 2];
+		PlayerCard[i] = Cards[(i * 2) + 1];
 	}
-	else if (MySum >= AISum)
+}
+
+void PreProcess()
+{
+	for (int i = 0; i < 3; ++i)
 	{
-		cout << "ÇÃ·¹ÀÌ¾î ½Â¸®!!";
+		ComputerScore[i] = (ComputerCard[i] % 13 + 1) > 10 ? 10 : (ComputerCard[i] % 13 + 1);
+
+		PlayerScore[i] = PlayerCard[i] % 13 + 1;
+
+		PlayerScore[i] = PlayerScore[i] > 10 ? 10 : PlayerScore[i];
+	}
+
+	TotalComputerScore = ComputerScore[0] + ComputerScore[1] + ComputerScore[2];
+	TotalPlayerScore = PlayerScore[0] + PlayerScore[1] + PlayerScore[2];
+}
+
+void Draw()
+{
+	//Draw
+	if (TotalComputerScore > 21)
+	{
+		cout << "Player Win" << endl;
+	}
+	else if (TotalPlayerScore > 21)
+	{
+		cout << "Player Lose" << endl;
+	}
+	else if (TotalComputerScore > TotalPlayerScore)
+	{
+		cout << "Player Lose" << endl;
 	}
 	else
 	{
-		cout << "ÇÃ·¹ÀÌ¾î ÆÐ¹è..";
+		cout << "Player Win" << endl;
 	}
-	
+
+	cout << "\n==========================" << endl;
+	cout << "Computer Deck" << endl;
+	for (int i = 0; i < 3; ++i)
+	{
+		int CardTypeIndex = ComputerCard[i] / 13;
+
+		cout << CardType[CardTypeIndex] << " " << DrawShape(ComputerCard[i]) << endl;
+	}
+	cout << "Total : " << TotalComputerScore << endl;
+	cout << "==========================\n" << endl;
+
+	cout << "==========================" << endl;
+	cout << "Player Deck" << endl;
+	for (int i = 0; i < 3; ++i)
+	{
+		int CardTypeIndex = PlayerCard[i] / 13;
+
+		cout << CardType[CardTypeIndex] << " " << DrawShape(PlayerCard[i]) << endl;
+	}
+	cout << "Total : " << TotalPlayerScore << endl;
+	cout << "==========================" << endl;
+
+}
+
+int main() //entry point
+{
+	// ì ˆì°¨ì§€í–¥ í”„ë¡œê·¸ëž˜ë°
+	Init();
+	Shuffle();
+	Deal();
+	PreProcess();
+	Draw();
+
 	return 0;
 }
