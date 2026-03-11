@@ -7,12 +7,12 @@ int main()
 {
 	// 숫자 입력받아서 그걸 크기로 숫자 배열을 만들어서 1부터 크기까지 초기화하고 출력하는 프로그램
 
-	int Number;
-	cin >> Number;
+	int Size;
+	cin >> Size;
 
-	int* NumberArray = new int[Number];
+	int* NumberArray = new int[Size];
 	
-	for (int i = 0; i < Number; ++i)
+	for (int i = 0; i < Size; ++i)
 	{
 		NumberArray[i] = i + 1;
 	}
@@ -20,7 +20,7 @@ int main()
 	
 	if (NumberArray)
 	{
-		for (int i = 0; i < Number; ++i)
+		for (int i = 0; i < Size; ++i)
 		{
 			cout << NumberArray[i];
 		}
