@@ -2,35 +2,34 @@
 
 using namespace std;
 
-void Init(int* Balls, int* SuffleBalls, int Size)
+void Init(int* Balls, int Size)
 {
 	for (int i = 0; i < Size; ++i)
 	{
 		Balls[i] = i + 1;
-		SuffleBalls[i] = Balls[i];
 	}
 }
-void Shuffle(int* Balls, int* ShuffleBalls, int Size)
+void Shuffle(int* Balls, int Size)
 {
 	int Temp = 0;
 	int FirstIndex = 0;
 	int SecondIndex = 0;
 
-	for (int i = 0; i < 100; ++i)
+	for (int i = 0; i < 45 * 10; ++i)
 	{
 		FirstIndex = rand() % Size;
 		SecondIndex = rand() % Size;
 
-		Temp = ShuffleBalls[FirstIndex];
-		ShuffleBalls[FirstIndex] = ShuffleBalls[SecondIndex];
-		ShuffleBalls[SecondIndex] = Temp;
+		Temp = Balls[FirstIndex];
+		Balls[FirstIndex] = Balls[SecondIndex];
+		Balls[SecondIndex] = Temp;
 	}
 }
-void Output(int* SuffleBalls, int GoalSize)
+void Output(int* Balls, int GoalSize)
 {
 	for (int i = 0; i < GoalSize; ++i)
 	{
-		cout << SuffleBalls[i] << ", ";
+		cout << Balls[i] << ", ";
 	}
 }
 int main()
@@ -41,24 +40,20 @@ int main()
 	int Size = 45;
 	int GoalSize = 6;
 	int* Balls = nullptr;
-	int* ShuffleBalls = nullptr;
-
+	
 	Balls = new int[Size];
-	ShuffleBalls = new int[Size];
 
 	// °øÃÊ±âÈ­
-	Init(Balls, ShuffleBalls, Size);
+	Init(Balls, Size);
 
 	// °ø¼¯±â
-	Shuffle(Balls, ShuffleBalls, Size);
+	Shuffle(Balls, Size);
 
 	// °ø»Ì±â
-	Output(ShuffleBalls, GoalSize);
+	Output(Balls, GoalSize);
 
 	delete[] Balls;
-	delete[] ShuffleBalls;
 	Balls = nullptr;
-	ShuffleBalls = nullptr;
 
 	return 0;
 }
