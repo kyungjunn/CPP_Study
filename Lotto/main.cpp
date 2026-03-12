@@ -1,26 +1,16 @@
 #include <iostream>
 
 using namespace std;
-
-int main()
+void Init(int* Balls, int* SuffleBalls, int Size)
 {
-	srand(time(NULL));
-	int Size = 45;
-	int GoalSize = 6;
-	int* Balls = nullptr;
-	int* SuffleBalls = nullptr;
-
-	Balls = new int[Size];
-	SuffleBalls = new int[Size];
-
-	// 공초기화
 	for (int i = 0; i < Size; ++i)
 	{
 		Balls[i] = i + 1;
 		SuffleBalls[i] = Balls[i];
 	}
-
-	// 공섞기
+}
+void Suffle(int* Balls, int* SuffleBalls, int Size)
+{
 	int Temp = 0;
 	int FirstIndex = 0;
 	int SecondIndex = 0;
@@ -34,12 +24,35 @@ int main()
 		SuffleBalls[FirstIndex] = SuffleBalls[SecondIndex];
 		SuffleBalls[SecondIndex] = Temp;
 	}
-
-	// 공뽑기
+}
+void Output(int* SuffleBalls, int GoalSize)
+{
 	for (int i = 0; i < GoalSize; ++i)
 	{
 		cout << SuffleBalls[i] << ", ";
 	}
+}
+int main()
+{
+	srand(time(NULL));
+
+	// 변수 선언
+	int Size = 45;
+	int GoalSize = 6;
+	int* Balls = nullptr;
+	int* SuffleBalls = nullptr;
+
+	Balls = new int[Size];
+	SuffleBalls = new int[Size];
+
+	// 공초기화
+	Init(Balls, SuffleBalls, Size);
+
+	// 공섞기
+	Suffle(Balls, SuffleBalls, Size);
+
+	// 공뽑기
+	Output(SuffleBalls, GoalSize);
 
 	delete[] Balls;
 	delete[] SuffleBalls;
