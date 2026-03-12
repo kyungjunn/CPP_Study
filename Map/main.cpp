@@ -79,15 +79,14 @@ void Process()
 
 	if (Map[PlayerY][PlayerX] == 1)
 	{
-		PlayerX == SavePointX;
-		PlayerY == SavePointY;
+		PlayerX = SavePointX;
+		PlayerY = SavePointY;
 	}
 }
 int main()
 {
 	
 	Maps();
-	
 	
 	while (1)
 	{
