@@ -25,8 +25,11 @@ int main()
 	// °ø»Ì±â
 	Output(Balls, Size, PickSize);
 
-	delete[] Balls;
-	Balls = nullptr;
+	if (Balls)
+	{
+		delete[] Balls;
+		Balls = nullptr;
+	}
 
 	return 0;
 }
