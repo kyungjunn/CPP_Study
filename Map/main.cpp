@@ -28,31 +28,23 @@ int PlayerInput = 0;
 // 게임 진행 상태
 bool bIsPlaying = true;
 
-// 맵 생성
-void Maps()
-{
-	// 이전 맵 지우기
-	system("cls");
+void Input();
+void Process();
+void Render();
 
-	for (int Y = 0; Y < Max; ++Y)
+int main()
+{
+	Render();
+	
+	while (bIsPlaying)
 	{
-		for (int X = 0; X < Max; ++X)
-		{
-			if (PlayerX == X && PlayerY == Y)
-			{
-				cout << 'P';
-			}
-			else if (Map[Y][X] == 1)
-			{
-				cout << '*';
-			}
-			else if (Map[Y][X] == 0)
-			{
-				cout << ' ';
-			}
-		}
-		cout << '\n';
+		Input();
+		Process();
+		Render();
 	}
+	cout << "아 줴제ㅜ이야";
+
+	return 0;
 }
 void Input()
 {
@@ -92,19 +84,28 @@ void Process()
 		bIsPlaying = false;
 	}
 }
-int main()
+void Render()
 {
-	
-	Maps();
-	
-	while (bIsPlaying)
+	// 이전 맵 지우기
+	system("cls");
+
+	for (int Y = 0; Y < Max; ++Y)
 	{
-		Input();
-		Process();
-		Maps();
+		for (int X = 0; X < Max; ++X)
+		{
+			if (PlayerX == X && PlayerY == Y)
+			{
+				cout << 'P';
+			}
+			else if (Map[Y][X] == 1)
+			{
+				cout << '*';
+			}
+			else if (Map[Y][X] == 0)
+			{
+				cout << ' ';
+			}
+		}
+		cout << '\n';
 	}
-
-	cout << "아 줴제ㅜ이야";
-
-	return 0;
 }
