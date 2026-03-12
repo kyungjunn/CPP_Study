@@ -3,6 +3,7 @@
 #define Max 10
 using namespace std;
 
+// 맵 초기화
 int Map[Max][Max] =
 {
 	{1, 1, 1, 1, 1, 1, 1, 1, 1, 1},
@@ -24,7 +25,10 @@ int PlayerY = 1;
 // 플레이어 키 입력
 int PlayerInput = 0;
 
-// 맵 초기화
+// 게임 진행 상태
+bool bIsPlaying = true;
+
+// 맵 생성
 void Maps()
 {
 	// 이전 맵 지우기
@@ -82,18 +86,25 @@ void Process()
 		PlayerX = SavePointX;
 		PlayerY = SavePointY;
 	}
+
+	if (PlayerX == Max - 2 && PlayerY == Max - 2)
+	{
+		bIsPlaying = false;
+	}
 }
 int main()
 {
 	
 	Maps();
 	
-	while (1)
+	while (bIsPlaying)
 	{
 		Input();
 		Process();
 		Maps();
 	}
+
+	cout << "아 줴제ㅜ이야";
 
 	return 0;
 }
