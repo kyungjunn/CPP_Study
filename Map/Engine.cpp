@@ -6,6 +6,8 @@
 // 플레이어 위치 초기화
 FVector2i PlayerPosition = { 1, 1 };
 
+bool bIsPlaying = true;
+
 int Map[10][10] = {
 	{1, 1, 1, 1, 1, 1, 1, 1, 1, 1},
 	{1, 0, 0, 0, 0, 0, 0, 0, 0, 1},
@@ -53,6 +55,11 @@ void Process(int PlayerInput)
 		PlayerPosition.X = SavePointX;
 		PlayerPosition.Y = SavePointY;
 	}
+
+	if (PlayerPosition.X == 8 && PlayerPosition.Y == 8)
+	{
+		bIsPlaying = false;
+	}
 }
 
 void Clear()
@@ -89,7 +96,6 @@ void Render()
 			{
 				std::cout << " ";
 			}
-			
 		}
 	}
 }

@@ -2,7 +2,7 @@
 
 int main()
 {
-	bool bIsPlaying = true;
+	
 	Render();
 
 	// 절차지향

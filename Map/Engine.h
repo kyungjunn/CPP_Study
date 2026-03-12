@@ -1,7 +1,6 @@
 #pragma once
 
 #ifndef __ENGINE_H__
-
 #define __ENGINE_H__
 
 // 맵 초기화
@@ -16,6 +15,8 @@ struct FVector2i
 
 extern FVector2i PlayerPosition; // -> 애가 잡은거임. 전역 선언
 
+extern bool bIsPlaying;
+
 int Input();
 
 void Process(int PlayerInput);
@@ -27,6 +28,7 @@ void Gotoxy(int x, int y);
 void Clear();
 
 void AddPlayerOffset(FVector2i DeltaPosition);
+
 void AddPlayerOffset(int DeltaX, int DeltaY);
 
 #endif
