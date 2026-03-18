@@ -21,32 +21,7 @@ UWorld::~UWorld()
 
 }
 
-void UWorld::Move()
+void UWorld::GoalDestinations()
 {
-	int PlayerInput = _getch();
-
-	int PlayerX = 1;
-	int PlayerY = 1;
-
-	if (PlayerInput == 'W' || PlayerInput == 'w')
-	{
-		PlayerY--;
-	}
-	if (PlayerInput == 'S' || PlayerInput == 's')
-	{
-		PlayerY++;
-	}
-	if (PlayerInput == 'A' || PlayerInput == 'a')
-	{
-		PlayerX--;
-	}
-	if (PlayerInput == 'D' || PlayerInput == 'd')
-	{
-		PlayerX++;
-	}
 }
 
-void UWorld::Finish()
-{ 
-
-}

@@ -4,4 +4,6 @@ class UWall
 public:
 	UWall();
 	~UWall();
+
+	void NoPass();
 };

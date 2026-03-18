@@ -19,7 +19,6 @@ public:
 	UMonster* Monsters;
 	UDestination* Destinations;
 
-	void Move();
-	void Finish();
+	void GoalDestinations();
 };
 
