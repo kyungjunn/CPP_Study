@@ -1,8 +1,13 @@
 #pragma once
-class UMonster
+class AMonster
 {
 public:
-	UMonster();
-	~UMonster();
+	AMonster();
+	~AMonster();
+
+	int X;
+	int Y; 
+	int Mesh;
+
 };
 

@@ -123,7 +123,15 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="FSM.cpp" />
     <ClCompile Include="main.cpp" />
+    <ClCompile Include="State.cpp" />
+    <ClCompile Include="Transition.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="FSM.h" />
+    <ClInclude Include="State.h" />
+    <ClInclude Include="Transition.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

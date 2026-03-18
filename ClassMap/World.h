@@ -1,10 +1,10 @@
 #pragma once
 
-class UWall;
-class UFloor;
-class UPlayer;
-class UMonster;
-class UDestination;
+class AWall;
+class AFloor;
+class APlayer;
+class AMonster;
+class AGoal;
 
 class UWorld
 {
@@ -12,13 +12,10 @@ public:
 	UWorld();
 	~UWorld();
 
-	UWall* Walls;
-	UFloor* Floors;
-
-	UPlayer* Players;
-	UMonster* Monsters;
-	UDestination* Destinations;
-
-	void GoalDestinations();
+	AWall* Walls;
+	AFloor* Floors;
+	APlayer* Players;
+	AMonster* Monsters;
+	AGoal* Goals;
 };
 

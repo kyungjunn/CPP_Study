@@ -33,7 +33,10 @@
     <ClCompile Include="Monster.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="Destination.cpp">
+    <ClCompile Include="Goal.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Actor.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
@@ -53,7 +56,10 @@
     <ClInclude Include="Monster.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Destination.h">
+    <ClInclude Include="Goal.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Actor.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

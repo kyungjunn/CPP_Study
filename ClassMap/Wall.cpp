@@ -1,9 +1,9 @@
 #include "Wall.h"
 
-UWall::UWall()
+AWall::AWall()
 {
 }
 
-UWall::~UWall()
+AWall::~AWall()
 {
 }

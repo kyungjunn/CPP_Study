@@ -1,10 +1,12 @@
 #pragma once
-class AWall
+class AGoal
+
 {
 public:
-	AWall();
-	~AWall();
+	AGoal();
+	~AGoal();
 
 	int X;
 	int Y;
 };
+

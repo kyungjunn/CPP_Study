@@ -1,8 +1,12 @@
 #pragma once
-class UPlayer
+#include "Actor.h"
+
+class APlayer : public AActor
 {
 public:
-	UPlayer();
-	~UPlayer();
+	APlayer();
+	~APlayer(); 
+
+	void Move();
 };
 

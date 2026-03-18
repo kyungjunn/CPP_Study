@@ -16,12 +16,7 @@ UWorld::~UWorld()
 	Players = nullptr;
 	delete[] Monsters;
 	Monsters = nullptr;
-	delete[] Destinations;
-	Destinations = nullptr;
-
-}
-
-void UWorld::GoalDestinations()
-{
+	delete[] Goals;
+	Goals = nullptr;
 }
 
