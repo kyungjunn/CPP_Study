@@ -17,18 +17,15 @@ int main()
 	// ·£´ýÀ¸·Î
 	UWorld World;
 	World.WildPigCount = rand() % 3 + 1;
-	World.SlimeCount = rand() % 8 + 3;
+	World.SlimeCount = rand() % 8 + 3;																										
 	World.GoblinCount= rand() % 2 + 1;
 
-	AWildPig* WildPig = new AWildPig();
-	WildPig[World.WildPigCount];
+	AWildPig* WildPig = new AWildPig[World.WildPigCount];
 
-	ASlime* Slime = new ASlime();
-	Slime[World.SlimeCount];
+	ASlime* Slime = new ASlime[World.SlimeCount];
 
-	AGoblin* Goblin = new AGoblin();
-	Goblin[World.GoblinCount];
-	
+	AGoblin* Goblin = new AGoblin[World.GoblinCount];
+
 	for (int i = 0; i < World.WildPigCount; i++)
 	{
 		WildPig[i].Move();
