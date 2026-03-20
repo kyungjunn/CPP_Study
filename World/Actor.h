@@ -9,5 +9,6 @@ public:
 	int Y;
 	int Mesh;
 
+	void Move(int X, int Y);
 };
 

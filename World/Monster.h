@@ -15,7 +15,9 @@ public:
 	AGoblin* Goblins;
 
 	void Attack();
-	void DropGold();
-	void Move(int X, int Y);
+	void Die();
+	void Drop();
+
+	int Gold;
 };
 

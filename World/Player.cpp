@@ -13,11 +13,11 @@ void APlayer::Attack()
 {
 }
 
-void APlayer::GetGold()
+void APlayer::Collect()
 {
 }
 
-void APlayer::Move(int X, int Y)
+
+void APlayer::Die()
 {
-	std::cout << "플레이어" << X << ", " << Y << "만큼 이동" << std::endl;
 }

@@ -12,10 +12,11 @@ void AMonster::Attack()
 {
 }
 
-void AMonster::DropGold()
+void AMonster::Die()
 {
 }
 
-void AMonster::Move(int X, int Y)
+void AMonster::Drop()
 {
 }
+

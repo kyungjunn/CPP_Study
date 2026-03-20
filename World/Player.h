@@ -7,7 +7,9 @@ public:
 	~APlayer();
 
 	void Attack();
-	void GetGold();
-	void Move(int X, int Y);
+	void Collect();
+	void Die();
+
+	int Gold;
 };
 
