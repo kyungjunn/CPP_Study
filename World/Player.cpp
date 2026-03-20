@@ -21,3 +21,10 @@ void APlayer::Collect()
 void APlayer::Die()
 {
 }
+
+void APlayer::Move()
+{
+	std::cout << "APlayer::";
+
+	__super::Move();			
+}

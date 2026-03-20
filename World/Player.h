@@ -9,6 +9,7 @@ public:
 	void Attack();
 	void Collect();
 	void Die();
+	void Move();
 
 	int Gold;
 };

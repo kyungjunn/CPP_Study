@@ -6,5 +6,7 @@ class AWildPig : public AMonster
 public:
 	AWildPig();
 	~AWildPig();
+
+	void Move();
 };
 
