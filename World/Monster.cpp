@@ -15,3 +15,7 @@ void AMonster::Attack()
 void AMonster::DropGold()
 {
 }
+
+void AMonster::Move(int X, int Y)
+{
+}

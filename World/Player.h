@@ -8,5 +8,6 @@ public:
 
 	void Attack();
 	void GetGold();
+	void Move(int X, int Y);
 };
 

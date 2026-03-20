@@ -16,5 +16,6 @@ public:
 
 	void Attack();
 	void DropGold();
+	void Move(int X, int Y);
 };
 

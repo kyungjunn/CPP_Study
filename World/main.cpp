@@ -5,7 +5,9 @@
 
 int main()
 {
-	APlayer MyPlayer;
+	APlayer* MyPlayer = new APlayer();
+
+	MyPlayer->Move(1, 1);
 
 	return 0;
 }

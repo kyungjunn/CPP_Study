@@ -9,8 +9,3 @@ AActor::AActor()
 AActor::~AActor()
 {
 }
-
-void AActor::Move(int X, int Y)
-{
-
-}
