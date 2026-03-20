@@ -15,5 +15,11 @@ public:
 	// void SetX(int InX);
 	int GetY();
 	void SetY(int InY);
-	void Move();
+
+	virtual void Move();
+
+	/* virtual void BeginPlay();
+	virtual void Tick();
+	virtual void Render(); */
+
 };

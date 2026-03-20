@@ -5,55 +5,40 @@
 #include "WildPig.h"
 #include "Slime.h"
 #include "Goblin.h"
+#include <vector>
 
-#define SAFE_DELETES(Object)		if(Object) { delete[] Object; } // 매크로 함수
-
-#define MAX(A, B)		(A > B ? A : B) // 값만 가져올 때
+using namespace std;
 
 int main()
 {
-	/*UEngine* MyEngine = new UEngine();
-	MyEngine->Run();
-	delete MyEngine;*/
-	srand((unsigned)time(nullptr));
+	std::vector<AActor*> Actors;
+		
+	Actors.push_back(new ASlime());
+	Actors.push_back(new AGoblin());
+	Actors.push_back(new AWildPig());
+	Actors.push_back(new APlayer());
 
-	// 멧돼지가 1~3 ,슬라임이 무조건 3~10마리 , 고블린이 2마리까지 
-	// 랜덤으로
-	UWorld World;
-	World.WildPigCount = rand() % 3; // << 이놈은 0일 때는 만들면 안되니까 예외처리
-	World.SlimeCount = rand() % 8 + 3;																										
-	World.GoblinCount= rand() % 2 + 1;
-
-	AWildPig* WildPigs = nullptr; 
-	if (World.WildPigCount > 0)
+	
+	// 모든 액터 이동
+	/*for (int i = 0; i < Actors.size(); ++i)
 	{
-		WildPigs= new AWildPig[World.WildPigCount];
+		Actors[i]->Move();
+	}*/
+
+	// foreach 모든 거  auto -> 반복문에서만 사용.
+	// 값 안바꾸고 복사 안하고(참조) Move만 출력하겠다. 레전드 성능\
+	//for (AActor* Actor : Actors)
+	for (const auto& Actor : Actors) 
+	{
+		Actor->Move();
 	}
 
-	ASlime* Slimes = new ASlime[World.SlimeCount];
-
-	AGoblin* Goblins = new AGoblin[World.GoblinCount];
-
-	for (int i = 0; i < World.WildPigCount; i++)
+	// 만들었으면 지우기
+	for (auto& Actor : Actors) 
 	{
-		WildPigs[i].Move();
-	}
-	for (int i = 0; i < World.SlimeCount; i++)
-	{
-		Slimes[i].Move();
-	}
-	for (int i = 0; i < World.GoblinCount; i++)
-	{
-		Goblins[i].Move();
+		delete Actor;
 	}
 
-	SAFE_DELETES(WildPigs);
-
-	delete[] Slimes;
-	Slimes = nullptr;
-																	
-	delete[] Goblins;
-	Goblins = nullptr;
-
+	Actors.clear();
 	return 0;
 }
