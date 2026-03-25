@@ -84,7 +84,7 @@ public:
 	// 이거 정도는 알아.
 	const T& operator[](int index) const
 	{
-		if (index > 0 || index < Size)
+		if (index < 0 || index > Size)
 		{
 			throw std::exception("인덱스 범위 벗어남");
 		}
