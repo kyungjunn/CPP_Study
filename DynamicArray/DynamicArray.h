@@ -81,8 +81,13 @@ public:
 
 	// operator overload
 	// 자료형 앞에 붙으면 return 값 바꾸지 마라.
+	// 이거 정도는 알아.
 	const T& operator[](int index) const
 	{
+		if (index > 0 || index < Size)
+		{
+			throw std::exception("인덱스 범위 벗어남");
+		}
 		return Data[index];
 	}
 
@@ -112,6 +117,51 @@ protected:
 	T* Data;
 	size_t Size = 0;
 	size_t Capacity = 1;
+
+public:
+	class Iterator // 역할 => 가리키는 것.
+	{
+	public:
+		Iterator(T* InPointer) : Pointer(InPointer)
+		{
+		}
+
+		// 전위증가
+		Iterator& operator++()
+		{
+			Pointer++;
+			return *this;
+		}
+
+		// 후위증가
+		Iterator operator++(int)
+		{
+			Pointer++;
+			return Iterator(Pointer);
+		}
+		
+		bool operator!=(const Iterator& Other)
+		{
+			return (Pointer != Other.Pointer);
+		}
+
+		T& operator*()
+		{
+			return *Pointer;
+		}
+
+	protected:
+		T* Pointer; // => 그래서 포인터로
+	};
+
+	Iterator begin()
+	{
+		return Iterator(Data);
+	}
+	Iterator end()
+	{
+		return Iterator(Data+Size);
+	}
 };
 
 #endif // !__DynamicArray_H__
