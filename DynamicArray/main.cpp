@@ -14,7 +14,7 @@ public:
 	int X;
 	int Y;
 
-	// operator overriding
+	// operator overload
 	FVector2D operator+(FVector2D RHS) // RightHandSide
 	{
 		FVector2D New;
@@ -56,18 +56,6 @@ int main()
 	cout << Three.X << endl;*/
 
 	//FVector2D Three = First + Second;
-
-	/*vector<int> IntVector;
-
-	IntVector.begin();
-	IntVector.end();
-
-	for (vector<int>::iterator iter = IntVector.begin(); iter != IntVector.end(); 
-		iter++)
-	{
-		iter.operator*();
-	}*/
-
 
 	return 0;
 }

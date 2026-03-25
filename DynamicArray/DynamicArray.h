@@ -94,7 +94,7 @@ public:
 	//[1][2][3][4] -> [1][2][4]
 	void RemoveAt(int RemoveIndex)
 	{
-		if (RemoveIndex > Size || RemoveIndex < 0)
+		if (RemoveIndex >= Size || RemoveIndex < 0)
 		{
 			throw std::out_of_range("ÀÎµ¦½º°¡ ¹üÀ§¸¦ ¹þ¾î³²");
 		}
