@@ -2,22 +2,25 @@
 #ifndef __DynamicArray_H__
 #define __DynamicArray_H__
 
+#include <stdexcept>
+
+template<typename T>
 class DynamicArray
 {
 public:
-	DynamicArray()
+	/*DynamicArray()
 	{
 		Size = 0;
 		Capacity = 1;
-		Data = new int[Capacity];
-	}
+		Data = new T[Capacity];
+	}*/
 
 	// 생성자 오버로딩 (인자값 변경으로 함수 재사용)
 	DynamicArray(int InitialCapacity = 10)
 	{
 		Size = 0;
 		Capacity = InitialCapacity;
-		Data = new int[InitialCapacity];
+		Data = new T[InitialCapacity];
 	}
 	~DynamicArray()
 	{
@@ -26,20 +29,24 @@ public:
 	}
 
 	// 크기 2배로 늘리기
-	void PushBack(int InValue)
+	// 값도 안바꾸고 복사도 안하겠다.
+	void PushBack(const T& InValue)
 	{
 		Size++;
-		int* NewData = nullptr;
-
+		
 		// Size > Capacity
 		// 저장공간 늘리기
+		// 이 부분은 ReSize 함수로 리팩토링 가능
+		T* NewData = nullptr;
 		if (Size > Capacity)
 		{
 			Capacity = Capacity * 2;
 
 			// 1. 늘어난 영역만큼 메모리 할당
-			NewData = new int[Capacity];
+			NewData = new T[Capacity];
 
+			// memcpy()
+			// memmove()
 			// 2. 원본 복제
 			for (int i = 0; i < Size - 1; ++i)
 			{
@@ -74,7 +81,7 @@ public:
 
 	// operator overload
 	// 자료형 앞에 붙으면 return 값 바꾸지 마라.
-	const int& operator[](int index) const
+	const T& operator[](int index) const
 	{
 		return Data[index];
 	}
@@ -84,9 +91,10 @@ public:
 	{
 		if (RemoveIndex > Size || RemoveIndex < 0)
 		{
-			return;
+			throw std::out_of_range("인덱스가 범위를 벗어남");
 		}
 
+		// memmove()
 		for (int i = RemoveIndex; i < Size; ++i)
 		{
 			Data[i] = Data[i + 1];
@@ -95,9 +103,13 @@ public:
 		Size--;
 	}
 	
+	void Clear()
+	{
+		Size = 0;
+	}
 
 protected:
-	int* Data;
+	T* Data;
 	size_t Size = 0;
 	size_t Capacity = 1;
 };

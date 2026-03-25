@@ -1,4 +1,8 @@
 #pragma once
+#ifndef __SDYNAMICARRAY_H__
+#define __SDYNAMICARRAY_H__
+
+
 class SDynamicArray
 {
 public:
@@ -53,8 +57,23 @@ public:
 		return Capacity;
 	}
 
+	int	RemoveAt(int RemoveIndex)
+	{
+		if (RemoveIndex > Size || RemoveIndex < 0)
+		{
+			return;
+		}
+
+		for (int i = RemoveIndex; i < Size; ++i)
+		{
+			Data[i] = Data[i + 1];
+		}
+
+		Size--;
+	}
+
 	int* Data;
 	size_t Size;
 	size_t Capacity;
 };
-
+#endif // !1
