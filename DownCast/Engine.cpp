@@ -3,6 +3,10 @@
 #include "World.h"
 #include "Actor.h"
 
+UEngine* UEngine::Instance = nullptr;
+
+int UEngine::KeyCode = 0;
+
 UEngine::UEngine()
 {
 	Init();
@@ -28,7 +32,7 @@ void UEngine::Run()
 {
 	while (bIsRunning)
 	{
-		//Input();
+		Input();
 		Tick();
 		Render();
 	}

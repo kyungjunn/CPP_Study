@@ -2,8 +2,6 @@
 #include <string>
 #include <vector>
 
-extern int Map[10][10];
-
 class AActor;
 
 class UWorld

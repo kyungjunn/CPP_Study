@@ -1,4 +1,5 @@
 #include "Player.h"
+#include "Engine.h"
 #include <iostream>
 
 APlayer::APlayer(int InX, int InY, char InMesh) 
@@ -14,17 +15,26 @@ APlayer::~APlayer()
 
 void APlayer::BeginPlay()
 {
-	__super::Render();
+	__super::BeginPlay();
 
 }
 
 void APlayer::Tick()
 {
-	__super::Render();
+	__super::Tick();
 
+	if (UEngine::KeyCode == 'w')
+	{
+		Y--;
+	}
+	if (UEngine::KeyCode == 's')
+	{
+		Y++;
+	}
 }
 
 void APlayer::Render()
 {
+	// AActor::Render();
 	__super::Render();
 }

@@ -32,15 +32,12 @@ Singleton* Singleton::Instance = nullptr;
 
 int main()
 {
-
-	Singleton::GetInstance();	
-
-	/*UEngine* MyEngine = new UEngine();
+	GEngine->GetInstance();
+	//UEngine* MyEngine = new UEngine();
 	
-	MyEngine->GetWorld()->Load("level01.umap");
+	GEngine->GetWorld()->Load("level01.txt");
 
-	MyEngine->Run();
+	GEngine->Run();
 
-	delete MyEngine;*/
 	return 0;
 }
