@@ -5,50 +5,35 @@
 
 using namespace std;
 
-//gloabl variable, 전역 변수
-int Value = 1;
-
-class Static
+// 디자인 패턴 다른 클래스에서 재사용
+// 이 싱글톤 객체가 하나만 존재하게 함.
+class Singleton 
 {
+private:
+	Singleton()
+	{
+
+	}
+
+	static Singleton* Instance;
+
 public:
-	Static()
+	static Singleton* GetInstance()
 	{
-		Static::Count++;
-	}
-
-	virtual ~Static()
-	{
-		Static::Count--;
-	}
-
-	//예외
-	//정적 변수
-	static int Count;
-
-	int Value;
-
-	//정적 함수
-	static void Display()
-	{
-		//		Value = 1; X
-		cout << Count << endl;
+		if (Instance == nullptr)
+		{
+			Instance = new Singleton();
+		}
+		return Instance;					
 	}
 };
 
-int Static::Count = 0;
+Singleton* Singleton::Instance = nullptr;
 
 int main()
 {
-	Static::Count++;
 
-	Static* D = new Static();
-
-	Static::Display();
-
-	delete D;
-
-	Static::Display();
-
+	Singleton::GetInstance();	
 
 	/*UEngine* MyEngine = new UEngine();
 	
