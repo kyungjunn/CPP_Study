@@ -4,31 +4,30 @@
 
 #include <stdexcept>
 
-template<typename T>
 class StrSTL
 {
 public:
 	StrSTL()
 	{
 		Length = 0;
-		Data = new T[1];
+		Data = new char[1];
 		Data[0] = '\0';
 	}
-	StrSTL(const T* InStr)
+	StrSTL(const char* InString)
 	{
 		Length = 0;
 		// 길이 세기
-		while (InStr[Length] != '\0')
+		while (InString[Length] != '\0')
 		{
 			Length++;
 		}
 
-		Data = new T[Length + 1];
+		Data = new char[Length + 1];
 
-		// 직접 복사
+		// 복사
 		for (int i = 0; i < Length; i++)
 		{
-			Data[i] = InStr[i];
+			Data[i] = InString[i];
 		}
 
 		Data[Length] = '\0'; // 문자열 끝에 null
@@ -65,12 +64,12 @@ public:
 	}
 
 	// 합치기
-	StrSTL operator+(StrSTL RHS)
+	StrSTL operator+(const StrSTL& RHS)
 	{
 		size_t NewLength;
 		NewLength = Length + RHS.Length;
-
-		T* NewData = new T[NewLength];
+		
+		char* NewData = new char[NewLength + 1];
 
 		// 앞 문자열 복사
 		for (int i = 0; i < Length; ++i)
@@ -85,13 +84,14 @@ public:
 		}
 
 		NewData[NewLength] = '\0';
+		
+		// 소멸하려면 이 안에 따로 String 클래스 만들어서 소멸할 것.  
+		//delete[] NewData;
 
-		delete[] Data;
-
-		return NewData;
+		return NewData; 
 	}
 
-	T* Data;
+	char* Data;
 	size_t Length;
 };
 

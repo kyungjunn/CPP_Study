@@ -124,9 +124,11 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp" />
+    <ClCompile Include="String.cpp" />
     <ClCompile Include="StrSTL.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="String.h" />
     <ClInclude Include="StrSTL.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
