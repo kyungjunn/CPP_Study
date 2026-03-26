@@ -19,6 +19,8 @@ public:
 	{
 		return World;
 	}
+
+	static int KeyCode;
 protected:
 	void Input();
 	void Tick();

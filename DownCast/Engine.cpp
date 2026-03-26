@@ -36,7 +36,7 @@ void UEngine::Run()
 
 void UEngine::Input()
 {
-	int KeyCode = _getch();
+	KeyCode = _getch();
 }
 
 void UEngine::Tick()
