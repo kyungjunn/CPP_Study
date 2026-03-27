@@ -13,6 +13,11 @@ public:
 
 	virtual void SetActorLocation(int NewX, int NewY);
 
+	inline const int GetZOrder() 
+	{
+		return ZOrder;
+	}
+
 protected:
 	int X;
 	int Y;

@@ -1,4 +1,5 @@
 #include "Actor.h"
+#include "Engine.h"
 #include <iostream>
 #include <Windows.h>
 
@@ -24,12 +25,14 @@ void AActor::Tick()
 
 void AActor::Render()
 {
-	COORD Coordinate;
-	Coordinate.X = X;
-	Coordinate.Y = Y;
-	SetConsoleCursorPosition(GetStdHandle(STD_OUTPUT_HANDLE), Coordinate);
+	//COORD Coordinate;
+	//Coordinate.X = X;
+	//Coordinate.Y = Y;
+	//SetConsoleCursorPosition(GetStdHandle(STD_OUTPUT_HANDLE), Coordinate);
 
-	std::cout << Mesh;
+	//std::cout << Mesh;
+
+	GENGINE->Render(X, Y, Mesh);
 }
 
 void AActor::SetActorLocation(int NewX, int NewY)

@@ -1,4 +1,5 @@
 #include "World.h"
+#include "Engine.h"
 #include "Actor.h"
 #include "Player.h"
 #include "Monster.h"
@@ -8,6 +9,7 @@
 
 #include <fstream> // 파일 읽고쓰는 헤더
 #include <string>
+#include <algorithm>
 
 UWorld::UWorld()
 {
@@ -43,22 +45,50 @@ void UWorld::Load(std::string MapName)
 			else if (C == '*')
 			{
 				SpawnActor<AWall>()->SetActorLocation(X, Y);
+				SpawnActor<AFloor>()->SetActorLocation(X, Y);
 			}
 			else if (C == 'P')
 			{
 				SpawnActor<APlayer>()->SetActorLocation(X, Y);
+				SpawnActor<AFloor>()->SetActorLocation(X, Y);
 			}
 			else if (C == 'M')
 			{
 				SpawnActor<AMonster>()->SetActorLocation(X, Y);
+				SpawnActor<AFloor>()->SetActorLocation(X, Y);
 			}
 			else if (C == 'G')
 			{
 				SpawnActor<AGoal>()->SetActorLocation(X, Y);
+				SpawnActor<AFloor>()->SetActorLocation(X, Y);
 			}
 		}
 
 		Y++;
+	}
+
+	//Sort(); 
+
+	// 이게 더 빠르긴 함.
+	std::sort(Actors.begin(), Actors.end(), 
+		[](AActor* First, AActor* Second) -> int {
+			return First->GetZOrder() < Second->GetZOrder() ? 1 : 0;
+		});
+}
+
+void UWorld::Sort()
+{
+	for (int i = 0; i < Actors.size(); i++)
+	{
+		for (int j = 0; j < Actors.size(); j++)
+		{
+			if (Actors[i]->GetZOrder() < Actors[j]->GetZOrder())
+			{
+				auto Temp = Actors[i];
+				Actors[i] = Actors[j];
+				Actors[j] = Temp;
+			}
+		}
 	}
 }
 
@@ -75,20 +105,16 @@ void UWorld::Render()
 {
 	// system("cls");
 	// 정렬 사용해서 액터의 우선순위를 줘야함.
+	
+	// 그리기 전에 지움
+	GENGINE->Clear();
+
 	// 전체 액터 Render 실행
 	for (auto Actor : Actors)
 	{
-		// Player는 건너뜀
-		if (dynamic_cast<APlayer*>(Actor)) continue;
 		Actor->Render();
 	}
 
-	// Player는 맨 마지막에 렌더링
-	for (auto Actor : Actors)
-	{
-		if (dynamic_cast<APlayer*>(Actor))
-		{
-			Actor->Render();
-		}
-	}
+	GENGINE->Flip();
 }
+
