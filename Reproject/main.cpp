@@ -91,10 +91,17 @@ int main()
 	// search and sort
 	// selection and bubble
 
-	// 람다 함수, 익명 함수
-	int (*Compare)(int A, int B) = [](int A, int B) -> int {
+	// 람다 함수, 익명 함수, 캡처
+	int Number = 0;
+	 
+	// 일급함수, 함수도 변수에 저장 가능
+	auto Compare = [Data, Number](int A, int B) -> int {
 		return 0;
-		};
+	};
+
+	/*int (*Compare)(int A, int B) = [](int A, int B) -> int {
+		return 0;
+		};*/
 
 	Compare(1, 2);
 
