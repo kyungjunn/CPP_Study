@@ -73,7 +73,8 @@ void UWorld::Tick()
 
 void UWorld::Render()
 {
-	system("cls");
+	// system("cls");
+	// 정렬 사용해서 액터의 우선순위를 줘야함.
 	// 전체 액터 Render 실행
 	for (auto Actor : Actors)
 	{

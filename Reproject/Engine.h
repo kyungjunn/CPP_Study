@@ -43,5 +43,5 @@ protected:
 	bool bIsRunning = true;
 };
 
-#define UEGINE	UEngine::GetInstance()
+#define GENGINE	UEngine::GetInstance()
 
