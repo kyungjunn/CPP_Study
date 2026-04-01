@@ -66,7 +66,7 @@ protected:
 	bool bIsRunning = true;
 
 	SDL_Window* MyWindow;
-	SDL_Renderer* MyRender;
+	SDL_Renderer* MyRenderer;
 	SDL_Event MyEvent;
 };
 

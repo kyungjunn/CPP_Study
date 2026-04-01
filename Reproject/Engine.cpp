@@ -20,7 +20,7 @@ void UEngine::Init()
 	SDL_Init(SDL_INIT_EVERYTHING);
 
 	MyWindow = SDL_CreateWindow("Hello", 100, 100, 1024, 720, SDL_WINDOW_SHOWN);
-	MyRender = SDL_CreateRenderer(MyWindow, -1, 0);
+	MyRenderer = SDL_CreateRenderer(MyWindow, -1, 0);
 
 	bool bIsRunning = true;
 
@@ -32,7 +32,7 @@ void UEngine::Init()
 void UEngine::Term()
 {
 	// 만들었으면 지우기
-	SDL_DestroyRenderer(MyRender);
+	SDL_DestroyRenderer(MyRenderer);
 	SDL_DestroyWindow(MyWindow);
 	SDL_Quit();
 
@@ -96,10 +96,10 @@ void UEngine::Render(int InX, int InY, char InMesh)
 void UEngine::Render(int InX, int InY, int R, int G, int B)
 {
 	int TileSize = 30;
-	SDL_SetRenderDrawColor(MyRender, R, G, B, 255);
+	SDL_SetRenderDrawColor(MyRenderer, R, G, B, 255);
 	//SDL_RenderDrawPoint(MyRender, InX, InY);
 	SDL_Rect MyRect = { InX * TileSize, InY * TileSize, TileSize, TileSize };
-	SDL_RenderFillRect(MyRender, &MyRect);
+	SDL_RenderFillRect(MyRenderer, &MyRect);
 }
 
 void UEngine::Flip()
@@ -140,14 +140,14 @@ void UEngine::Render()
 	// Drawcall 
 	// CPU가 하는 건 GPU 한테 할 일을 적는 거
 	// GPU 한테 보낼 명령어 모음(아직 안보낸거)
-	SDL_SetRenderDrawColor(MyRender, 255, 255, 255, 255);
+	SDL_SetRenderDrawColor(MyRenderer, 255, 255, 255, 255);
 
 	// 그리기 전에 지우기
-	SDL_RenderClear(MyRender);
+	SDL_RenderClear(MyRenderer);
 
 	World->Render();
 
 	// 보내기 CPU -> GPU
 	// 많이 보낼 수록 느려짐.
-	SDL_RenderPresent(MyRender);
+	SDL_RenderPresent(MyRenderer);
 }
