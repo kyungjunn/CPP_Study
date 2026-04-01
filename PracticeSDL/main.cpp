@@ -11,6 +11,7 @@ using namespace std;
 
 int SDL_main(int argc, char* argv[])
 {
+	// √ ±‚»≠
 	SDL_Init(SDL_INIT_EVERYTHING);
 
 	SDL_Window* MyWindow = SDL_CreateWindow("MyWindow", 100, 100,
@@ -29,18 +30,15 @@ int SDL_main(int argc, char* argv[])
 		SDL_Event MyEvent;
 		SDL_PollEvent(&MyEvent);
 
-		if (MyEvent.type == SDL_QUIT)
+
+		SDL_Keycode Keycode = MyEvent.key.keysym.sym;
+		if (MyEvent.type == SDL_QUIT || Keycode == SDLK_ESCAPE)
 		{
 			bIsRunning = false;
 		}
 
-		SDL_SetRenderDrawColor(MyRenderer, 255, 255, 255, 255);
-		SDL_RenderClear(MyRenderer);
-
 		if (MyEvent.type == SDL_KEYDOWN)
 		{
-			SDL_Keycode Keycode = MyEvent.key.keysym.sym;
-
 			if (Keycode == SDLK_w)
 			{
 				Y--;
@@ -59,12 +57,19 @@ int SDL_main(int argc, char* argv[])
 			}
 		}
 
+
+		SDL_SetRenderDrawColor(MyRenderer, 255, 255, 255, 255);
+		SDL_RenderClear(MyRenderer);
+
+
 		SDL_SetRenderDrawColor(MyRenderer, 255, 0, 0, 255);
-		SDL_Rect Square = { X* TileSize, Y* TileSize, TileSize, TileSize };
+		SDL_Rect Square = { X, Y, TileSize, TileSize };
 		SDL_RenderFillRect(MyRenderer, &Square);
 
 		SDL_RenderPresent(MyRenderer);
 	}
+
+	SDL_DestroyRenderer(MyRenderer);
 
 	SDL_DestroyWindow(MyWindow);
 
