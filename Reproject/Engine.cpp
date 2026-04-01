@@ -1,13 +1,10 @@
 #include "Engine.h"
 #include "World.h"
-#include <conio.h>
 #include <string>
 
 #include "SDL.h"
 
 UEngine* UEngine::Instance = nullptr;
-
-int UEngine::KeyCode = 0;
 
 UEngine::UEngine()
 {
@@ -115,10 +112,12 @@ void UEngine::TermBuffer()
 
 void UEngine::Input()
 {
-	if (_kbhit())
+	/*if (_kbhit())
 	{
 		KeyCode = _getch();
-	}
+	}*/
+
+
 }
 
 void UEngine::Tick()

@@ -38,8 +38,6 @@ public:
 		return World;
 	}
 	
-	static int KeyCode;
-
 	// 원래는 Renderer 
 	HANDLE ScreenBufferHandle[2]; // 2장그릴거니까
 	int ActiveScreenBufferIndex = 0; // 몇 번째꺼
@@ -50,6 +48,11 @@ public:
 	void Render(int InX, int InY, int R, int G, int B);
 	void Flip(); // 왔다갔다
 	void TermBuffer();
+
+	inline const SDL_Event& GetEvent()
+	{
+		return MyEvent;
+	}
 
 protected:
 	void Input();

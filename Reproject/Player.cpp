@@ -26,24 +26,27 @@ void APlayer::Tick()
 {
 	__super::Tick();
 
-	if (UEngine::KeyCode == 'w' || UEngine::KeyCode == 'W')
+	SDL_Event Event = GENGINE->GetEvent();
+	if (Event.type == SDL_KEYDOWN)
 	{
-		Y--;
+		
+		if (Event.key.keysym.sym == SDLK_w)
+		{
+			Y--;
+		}
+		if (Event.key.keysym.sym == SDLK_s)
+		{
+			Y++;
+		}
+		if (Event.key.keysym.sym == SDLK_a)
+		{
+			X--;
+		}
+		if (Event.key.keysym.sym == SDLK_d)
+		{
+			X++;
+		}
 	}
-	if (UEngine::KeyCode == 's' || UEngine::KeyCode == 'S')
-	{
-		Y++;
-	}
-	if (UEngine::KeyCode == 'a' || UEngine::KeyCode == 'A')
-	{
-		X--;
-	}
-	if (UEngine::KeyCode == 'd' || UEngine::KeyCode == 'D')
-	{
-		X++;
-	}
-
-	UEngine::KeyCode = 0;
 }
 
 void APlayer::Render()
