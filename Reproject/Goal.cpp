@@ -6,6 +6,10 @@ AGoal::AGoal(int InX, int InY, char InMesh)
 	Y = InY;
 	Mesh = InMesh;
 	ZOrder = 100;
+
+	R = 0;
+	G = 0;
+	B = 255;
 }
 
 AGoal::~AGoal()

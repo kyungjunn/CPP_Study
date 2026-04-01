@@ -1,6 +1,11 @@
 #pragma once
 
 #include <Windows.h>
+#include "SDL.h"
+
+// 사용할 라이브러리 파일 추가
+#pragma comment(lib, "SDL2")
+#pragma comment(lib, "SDL2main")
 
 class UWorld;
 
@@ -41,7 +46,8 @@ public:
 
 	void InitBuffer();
 	void Clear(); // 지우기
-	void Render(int InX, int InY, char InMesh); // 그리기
+	void Render(int InX, int InY, char InMesh);
+	void Render(int InX, int InY, int R, int G, int B);
 	void Flip(); // 왔다갔다
 	void TermBuffer();
 
@@ -53,6 +59,10 @@ protected:
 	class UWorld* World;
 
 	bool bIsRunning = true;
+
+	SDL_Window* MyWindow;
+	SDL_Renderer* MyRender;
+	SDL_Event MyEvent;
 };
 
 #define GENGINE	UEngine::GetInstance()
