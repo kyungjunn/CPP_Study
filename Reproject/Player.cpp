@@ -26,25 +26,34 @@ void APlayer::Tick()
 {
 	__super::Tick();
 
-	SDL_Event Event = GENGINE->GetEvent();
+	SDL_Event Event = GEngine->GetEvent();
+
 	if (Event.type == SDL_KEYDOWN)
 	{
-		
-		if (Event.key.keysym.sym == SDLK_w)
+		SDL_Keycode Keycode = Event.key.keysym.sym;
+
+		if (Keycode == SDLK_w)
 		{
 			Y--;
+			// callback
+			// std::function<void>
 		}
-		if (Event.key.keysym.sym == SDLK_s)
+		if (Keycode == SDLK_s)
 		{
 			Y++;
 		}
-		if (Event.key.keysym.sym == SDLK_a)
+		if (Keycode == SDLK_a)
 		{
 			X--;
 		}
-		if (Event.key.keysym.sym == SDLK_d)
+		if (Keycode == SDLK_d)
 		{
 			X++;
+		}
+		
+		if (Keycode == SDLK_ESCAPE)
+		{
+			GEngine->Stop();
 		}
 	}
 }

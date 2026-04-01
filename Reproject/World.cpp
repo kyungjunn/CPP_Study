@@ -107,7 +107,7 @@ void UWorld::Render()
 	// 정렬 사용해서 액터의 우선순위를 줘야함.
 	
 	// 그리기 전에 지움
-	GENGINE->Clear();
+	GEngine->Clear();
 
 	// 전체 액터 Render 실행
 	for (auto Actor : Actors)
@@ -115,6 +115,6 @@ void UWorld::Render()
 		Actor->Render();
 	}
 
-	GENGINE->Flip();
+	GEngine->Flip();
 }
 

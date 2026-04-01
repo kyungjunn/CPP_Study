@@ -33,6 +33,8 @@ public:
 
 	void Run();
 
+	void Stop();
+
 	inline UWorld* GetWorld()
 	{
 		return World;
@@ -68,5 +70,5 @@ protected:
 	SDL_Event MyEvent;
 };
 
-#define GENGINE	UEngine::GetInstance()
+#define GEngine	UEngine::GetInstance()
 

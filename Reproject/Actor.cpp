@@ -35,8 +35,8 @@ void AActor::Render()
 
 	//std::cout << Mesh;
 
-	GENGINE->Render(X, Y, Mesh);
-	GENGINE->Render(X, Y, R, G, B);
+	GEngine->Render(X, Y, Mesh);
+	GEngine->Render(X, Y, R, G, B);
 }
 
 void AActor::SetActorLocation(int NewX, int NewY)
