@@ -21,15 +21,17 @@ int SDL_main(int argc, char* argv[])
 
 	int X = 0;
 	int Y = 0;
+	int TileSize = 20;
+	bool bIsRunning = true;
 
-	while (1)
+	while (bIsRunning)
 	{
 		SDL_Event MyEvent;
 		SDL_PollEvent(&MyEvent);
 
 		if (MyEvent.type == SDL_QUIT)
 		{
-			break;
+			bIsRunning = false;
 		}
 
 		SDL_SetRenderDrawColor(MyRenderer, 255, 255, 255, 255);
@@ -58,7 +60,7 @@ int SDL_main(int argc, char* argv[])
 		}
 
 		SDL_SetRenderDrawColor(MyRenderer, 255, 0, 0, 255);
-		SDL_Rect Square = { X, Y, 100, 100 };
+		SDL_Rect Square = { X* TileSize, Y* TileSize, TileSize, TileSize };
 		SDL_RenderFillRect(MyRenderer, &Square);
 
 		SDL_RenderPresent(MyRenderer);
