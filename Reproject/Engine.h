@@ -62,9 +62,14 @@ public:
 		return DeltaSeconds;
 	}
 
-	inline SDL_Renderer* GetRenderer()
+	inline SDL_Renderer* GetRenderer() const
 	{
 		return MyRenderer;
+	}
+
+	inline SDL_Window* GetWindow() const
+	{
+		return MyWindow;
 	}
 protected:
 	void Input();

@@ -11,6 +11,8 @@ APlayer::APlayer(int InX, int InY, char InMesh)
 	R = 255;
 	G = 0;
 	B = 0;
+
+	Load("Data/player.bmp");
 }
 
 APlayer::~APlayer()
@@ -61,4 +63,15 @@ void APlayer::Tick()
 void APlayer::Render()
 {
 	__super::Render();
+}
+
+void APlayer::Load(std::string Filename)
+{
+	Image = SDL_LoadBMP(Filename.c_str());
+
+	// 픽셀 포맷 - RGB 값을 빼서 그리도록.
+	SDL_SetColorKey(Image, SDL_TRUE, SDL_MapRGB(Image->format, 255, 0, 255));
+
+	Texture = SDL_CreateTextureFromSurface(GEngine->GetRenderer()
+		, Image);
 }

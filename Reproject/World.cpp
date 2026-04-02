@@ -29,12 +29,16 @@ void UWorld::Load(std::string MapName)
 	std::ifstream File(MapName); // 파일 열기
 
 	int Y = 0;
+
+	int MaxX = -1;
+	int MaxY = -1;
+
 	while (!File.eof()) // 파일이 끝나지 않을 때까지
 	{
 		std::string Line; // 한 줄씩 읽기
 		std::getline(File, Line); // 파일 끝까지 한 줄씩
 
-		for (int X = 0; X < Line.size(); ++X)
+		for (int X = 0; X < Line.length(); ++X)
 		{
 			char C = Line[X];
 
@@ -62,10 +66,18 @@ void UWorld::Load(std::string MapName)
 				SpawnActor<AGoal>()->SetActorLocation(X, Y);
 				SpawnActor<AFloor>()->SetActorLocation(X, Y);
 			}
-		}
 
+			if (MaxX < X + 1)
+			{
+				MaxX = X + 1;
+			}
+		}
 		Y++;
 	}
+
+	MaxY = Y;
+
+	SDL_SetWindowSize(GEngine->GetWindow(), (MaxX) * 30, MaxY * 30);
 
 	//Sort(); 
 

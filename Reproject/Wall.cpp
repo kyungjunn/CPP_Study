@@ -10,6 +10,8 @@ AWall::AWall(int InX, int InY, char InMesh)
 	R = 0;
 	G = 255;
 	B = 0;
+
+	Load("Data/wall.bmp");
 }
 
 AWall::~AWall()
