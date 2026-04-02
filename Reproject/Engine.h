@@ -8,6 +8,7 @@
 #pragma comment(lib, "SDL2main")
 
 class UWorld;
+class UResourceManager;
 
 class UEngine
 {
@@ -71,6 +72,12 @@ public:
 	{
 		return MyWindow;
 	}
+
+	inline UResourceManager* GetResourceManager() const
+	{
+		return ResourceManager;
+	}
+
 protected:
 	void Input();
 	void Tick();
@@ -85,8 +92,9 @@ protected:
 	SDL_Event MyEvent;
 
 	float DeltaSeconds;
-
+	
+	UResourceManager* ResourceManager;
 };
 
-#define GEngine	UEngine::GetInstance()
+#define GEngine			UEngine::GetInstance()
 

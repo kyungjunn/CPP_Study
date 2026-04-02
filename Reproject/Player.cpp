@@ -58,8 +58,6 @@ void APlayer::Tick()
 			Direction = 1; // 오른쪽
 		}
 
-		//CurrentFrame = (CurrentFrame + 1) % 5;
-
 		if (Keycode == SDLK_ESCAPE)
 		{
 			GEngine->Stop();
@@ -99,7 +97,6 @@ void APlayer::Render()
 	// 이미지의 한 칸 크기 계산
 	int SpriteWidth = Image->w / 5;
 	int SpriteHeight = Image->h / 5;	
-
 
 	// 그리기
 	SDL_Rect SourceRect = { SpriteIndexX * SpriteWidth, Direction * SpriteHeight, SpriteWidth , SpriteHeight };

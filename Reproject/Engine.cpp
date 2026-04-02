@@ -1,5 +1,6 @@
 #include "Engine.h"
 #include "World.h"
+#include "ResourceManager.h"
 #include <string>
 
 #include "SDL.h"
@@ -28,6 +29,8 @@ void UEngine::Init()
 	//MyRenderer = SDL_CreateRenderer(MyWindow, -1, 
 		//SDL_RENDERER_SOFTWARE || SDL_RENDERER_PRESENTVSYNC);
 
+	ResourceManager = new UResourceManager();
+
 	bool bIsRunning = true;
 
 	InitBuffer();
@@ -45,6 +48,8 @@ void UEngine::Term()
 	delete World;
 	TermBuffer();
 	World = nullptr;
+
+	delete ResourceManager;
 }
 
 void UEngine::Run()
