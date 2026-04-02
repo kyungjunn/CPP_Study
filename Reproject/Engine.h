@@ -56,6 +56,11 @@ public:
 		return MyEvent;
 	}
 
+	inline float GetDeltaSeconds() const
+	{
+		return DeltaSeconds;
+	}
+
 protected:
 	void Input();
 	void Tick();
@@ -68,6 +73,9 @@ protected:
 	SDL_Window* MyWindow;
 	SDL_Renderer* MyRenderer;
 	SDL_Event MyEvent;
+
+	float DeltaSeconds;
+
 };
 
 #define GEngine	UEngine::GetInstance()

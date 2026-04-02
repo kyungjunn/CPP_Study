@@ -20,7 +20,13 @@ void UEngine::Init()
 	SDL_Init(SDL_INIT_EVERYTHING);
 
 	MyWindow = SDL_CreateWindow("Hello", 100, 100, 1024, 720, SDL_WINDOW_SHOWN);
-	MyRenderer = SDL_CreateRenderer(MyWindow, -1, 0);
+	MyRenderer = SDL_CreateRenderer(MyWindow, -1, 
+		SDL_RENDERER_ACCELERATED || SDL_RENDERER_PRESENTVSYNC 
+		|| SDL_RENDERER_TARGETTEXTURE);
+
+	// 그래픽카드 같은 게 없을 때 SOFTWARE를 사용 ( 더 느려짐)
+	//MyRenderer = SDL_CreateRenderer(MyWindow, -1, 
+		//SDL_RENDERER_SOFTWARE || SDL_RENDERER_PRESENTVSYNC);
 
 	bool bIsRunning = true;
 
@@ -43,13 +49,19 @@ void UEngine::Term()
 
 void UEngine::Run()
 {
+	Uint64 LastTime;
 	while (bIsRunning)
 	{
-		SDL_PollEvent(&MyEvent);
+		LastTime = SDL_GetTicks64();
 
+		SDL_PollEvent(&MyEvent);
 		Input();
 		Tick();
 		Render();
+		
+		DeltaSeconds = (float)(SDL_GetTicks64() - LastTime) / 1000.0f; // m/s
+		// SDL_Log("FPS : %f s", DeltaSeconds);
+
 	}
 }
 
@@ -76,6 +88,15 @@ void UEngine::InitBuffer()
 
 void UEngine::Clear()
 {
+	// Drawcall 
+	// CPU가 하는 건 GPU 한테 할 일을 적는 거
+	// GPU 한테 보낼 명령어 모음(아직 안보낸거)
+	SDL_SetRenderDrawColor(MyRenderer, 255, 255, 255, 255);
+
+	// 그리기 전에 지우기
+	SDL_RenderClear(MyRenderer);
+
+	// Console Clear
 	DWORD DW;
 	// 지금 그리고 있는 거 지워줘
 	FillConsoleOutputCharacter(ScreenBufferHandle[ActiveScreenBufferIndex], ' ',
@@ -121,8 +142,6 @@ void UEngine::Input()
 	{
 		KeyCode = _getch();
 	}*/
-
-
 }
 
 void UEngine::Tick()
@@ -137,14 +156,6 @@ void UEngine::Tick()
 
 void UEngine::Render()
 {
-	// Drawcall 
-	// CPU가 하는 건 GPU 한테 할 일을 적는 거
-	// GPU 한테 보낼 명령어 모음(아직 안보낸거)
-	SDL_SetRenderDrawColor(MyRenderer, 255, 255, 255, 255);
-
-	// 그리기 전에 지우기
-	SDL_RenderClear(MyRenderer);
-
 	World->Render();
 
 	// 보내기 CPU -> GPU
