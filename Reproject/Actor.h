@@ -1,4 +1,10 @@
 #pragma once
+#include <string>
+
+//#include "SDL.h"	
+struct SDL_Surface;
+struct SDL_Texture;
+
 class AActor
 {
 public:
@@ -13,10 +19,13 @@ public:
 
 	virtual void SetActorLocation(int NewX, int NewY);
 
+	void Load(std::string Filename);
+
 	inline const int GetZOrder() 
 	{
 		return ZOrder;
 	}
+	
 
 protected:
 	int X;
@@ -28,5 +37,8 @@ protected:
 
 	int ZOrder;
 	char Mesh;
+
+	SDL_Surface* Image;
+	SDL_Texture* Texture;
 };
 

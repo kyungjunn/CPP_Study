@@ -4,6 +4,9 @@
 
 using namespace std;
 
+//typedef unsigned char byte;
+using byte = unsigned char;
+
 int SDL_main(int argc, char* argv[])
 {
 

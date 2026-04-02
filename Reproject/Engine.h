@@ -48,6 +48,7 @@ public:
 	void Clear(); // 지우기
 	void Render(int InX, int InY, char InMesh);
 	void Render(int InX, int InY, int R, int G, int B);
+	void Render(int InX, int InY, SDL_Texture* InTexture);
 	void Flip(); // 왔다갔다
 	void TermBuffer();
 
@@ -61,6 +62,10 @@ public:
 		return DeltaSeconds;
 	}
 
+	inline SDL_Renderer* GetRenderer()
+	{
+		return MyRenderer;
+	}
 protected:
 	void Input();
 	void Tick();
