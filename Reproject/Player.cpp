@@ -1,5 +1,6 @@
 #include "Player.h"
 #include "Engine.h"
+#include "GameplayStatics.h"
 
 APlayer::APlayer(int InX, int InY, char InMesh)
 {
@@ -39,31 +40,46 @@ void APlayer::Tick()
 			Y--;
 			// callback
 			// std::function<void>
+			Direction = 2; // 위
 		}
 		if (Keycode == SDLK_s)
 		{
 			Y++;
+			Direction = 3; // 아래
 		}
 		if (Keycode == SDLK_a)
 		{
 			X--;
+			Direction = 0; // 왼쪽
 		}
 		if (Keycode == SDLK_d)
 		{
 			X++;
+			Direction = 1; // 오른쪽
 		}
-		
+
+		//CurrentFrame = (CurrentFrame + 1) % 5;
+
 		if (Keycode == SDLK_ESCAPE)
 		{
 			GEngine->Stop();
 		}
 	}
+
+	ElapsedTime += UGameplayStatics::GetWorldDeltaSeconds();
+	if (ElapsedTime >= ExecutionTime)
+	{
+		SpriteIndexX++;
+		SpriteIndexX = SpriteIndexX % 5;
+		ElapsedTime = 0;
+	}
 }
 
-void APlayer::Render()
-{
-	__super::Render();
-}
+//void APlayer::Render()
+//{
+//	__super::Render();
+//}
+
 
 void APlayer::Load(std::string Filename)
 {
@@ -74,4 +90,20 @@ void APlayer::Load(std::string Filename)
 
 	Texture = SDL_CreateTextureFromSurface(GEngine->GetRenderer()
 		, Image);
+}
+
+void APlayer::Render()
+{
+	int TileSize = 30;
+
+	// 이미지의 한 칸 크기 계산
+	int SpriteWidth = Image->w / 5;
+	int SpriteHeight = Image->h / 5;	
+
+
+	// 그리기
+	SDL_Rect SourceRect = { SpriteIndexX * SpriteWidth, Direction * SpriteHeight, SpriteWidth , SpriteHeight };
+	SDL_Rect DestinationRect = { X * TileSize, Y * TileSize, TileSize, TileSize };
+	SDL_RenderCopy(GEngine->GetRenderer(), Texture, &SourceRect, &DestinationRect);
+
 }

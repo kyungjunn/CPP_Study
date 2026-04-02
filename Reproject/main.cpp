@@ -19,5 +19,7 @@ int SDL_main(int argc, char* argv[])
 	//// 그리고 실행
 	GEngine->Run();
 
+	delete GEngine;
+
 	return 0;
 }
