@@ -12,8 +12,6 @@ public:
 
 	virtual void Render() override;
 
-	virtual void Load(std::string Filename) override;
-
 protected:
 	int	CurrentFrame;
 	int SpriteIndexX = 0;

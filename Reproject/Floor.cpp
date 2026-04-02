@@ -1,5 +1,6 @@
 #include "Floor.h"
-
+#include "Engine.h"
+#include "ResourceManager.h"
 AFloor::AFloor(int InX, int InY, char InMesh)
 {
 	X = InX;
@@ -11,7 +12,9 @@ AFloor::AFloor(int InX, int InY, char InMesh)
 	G = 0;
 	B = 0;
 
-	Load("Data/floor.bmp");
+	Resource TempResource = GEngine->GetResourceManager()->LoadTexture("Data/floor.bmp");
+	Image = TempResource.Image;
+	Texture = TempResource.Texture;
 }
 
 AFloor::~AFloor()

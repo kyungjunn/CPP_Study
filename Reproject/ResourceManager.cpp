@@ -1,22 +1,50 @@
 #include "ResourceManager.h"
 #include "SDL.h"
-
+#include "Engine.h"
+	
 UResourceManager::UResourceManager()
 {
 }
 
 UResourceManager::~UResourceManager()
 {
+	for (auto Iter : Resources)
+	{
+		if (Iter.second.Image)
+		{
+			SDL_FreeSurface(Iter.second.Image);
+		}
+		if (Iter.second.Texture)
+		{
+			SDL_DestroyTexture(Iter.second.Texture);
+		}
+	}
+
+	Resources.clear();
 }
-SDL_Texture* UResourceManager::LoadTexture(std::string Filename)
+
+Resource& UResourceManager::LoadTexture(std::string Filename, bool bIsColorKey, Uint8 R, Uint8 G, Uint8 B)
 {
-	//Image = SDL_LoadBMP(Filename.c_str());
+	if (Resources.find(Filename) != Resources.end())
+	{
+		return Resources.find(Filename)->second;
+	}
+	
+	Resource NewResource;
+
+	NewResource.Image = SDL_LoadBMP(Filename.c_str());
 
 	//// 픽셀 포맷 - RGB 값을 빼서 그리도록.
-	//SDL_SetColorKey(Image, SDL_TRUE, SDL_MapRGB(Image->format, 255, 255, 255));
-	////SDL_SetColorKey(Image, SDL_TRUE, SDL_MapRGB(Image->format, 255, 0, 255));
+	if (bIsColorKey)
+	{
+		SDL_SetColorKey(NewResource.Image, SDL_TRUE, SDL_MapRGB(NewResource.Image->format, R, G, B));
+	}
 
-	//Texture = SDL_CreateTextureFromSurface(GEngine->GetRenderer()
-	//	, Image);
-	return nullptr;
+	NewResource.Texture = SDL_CreateTextureFromSurface(GEngine->GetRenderer()
+		, NewResource.Image);
+
+	Resources[Filename] = NewResource;
+
+	return Resources[Filename];
 }
+
