@@ -14,6 +14,7 @@ APlayer::APlayer(int InX, int InY, char InMesh)
 	G = 0;
 	B = 0;
 
+	// 리소스 파일에 저장한 텍스처가 있으면 가져오고 없으면 만들어.
 	Resource TempResource = GEngine->GetResourceManager()->LoadTexture("Data/player.bmp", true, 255, 0, 255);
 	Image = TempResource.Image;
 	Texture = TempResource.Texture;
@@ -67,12 +68,15 @@ void APlayer::Tick()
 		}
 	}
 
+	// 시간을 받아와 누적시킴
 	ElapsedTime += UGameplayStatics::GetWorldDeltaSeconds();
+	
+	// 누적 시킨 시간이 한 프레임당 유지 시간을 넘었는지
 	if (ElapsedTime >= ExecutionTime)
 	{
-		SpriteIndexX++;
-		SpriteIndexX = SpriteIndexX % 5;
-		ElapsedTime = 0;
+		SpriteIndexX++; // 다음 칸 이동
+		SpriteIndexX = SpriteIndexX % 5; // 인덱스가 5가 되면 0으로 초기화
+		ElapsedTime = 0; // 시간도 초기화
 	}
 }
 
