@@ -2,6 +2,7 @@
 #include "Character.h"
 
 class USpriteComponent;
+class UCollisionComponent;
 class AActor;
 
 class AMonster : public ACharacter
@@ -13,6 +14,7 @@ public:
 	virtual void Tick() override;
 
 	USpriteComponent* SpriteComponent;
+	UCollisionComponent* CollisionComponent;
 
 protected:
 	float ElapsedTime = 0;

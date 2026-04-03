@@ -4,6 +4,7 @@
 #include "World.h"
 #include "ResourceManager.h"
 #include "SpriteComponent.h"
+#include "CollisionComponent.h"
 
 AMonster::AMonster(int InX, int InY, char InMesh)
 {
@@ -17,6 +18,10 @@ AMonster::AMonster(int InX, int InY, char InMesh)
 	SpriteComponent->Texture = TempResource.Texture;
 	SpriteComponent->ZOrder = 70;
 	ElapsedTime = 0.5f; // 몬스터 스피드 
+
+	CollisionComponent = CreateDefaultSubobject<UCollisionComponent>("Collision");
+	CollisionComponent->bIsGenerateHit = false;
+	CollisionComponent->bIsGenerateOverlap = true;
 }
 
 AMonster::~AMonster()

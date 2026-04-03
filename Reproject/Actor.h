@@ -23,14 +23,7 @@ public:
 
 	virtual void Tick();
 
-	//virtual void Render();
-
 	virtual void SetActorLocation(int NewX, int NewY);
-
-	/*inline const int GetZOrder() 
-	{
-		return ZOrder;
-	}*/
 
 	std::vector<UComponent*> Components;
 

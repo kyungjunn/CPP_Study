@@ -5,6 +5,9 @@
 #include "ResourceManager.h"
 #include "SpriteAnimationComponent.h"
 #include "CollisionComponent.h"
+#include "Goal.h"
+#include "MyGM.h"
+#include "Monster.h"
 
 APlayer::APlayer(int InX, int InY, char InMesh)
 {
@@ -34,7 +37,25 @@ void APlayer::BeginPlay()
 	__super::BeginPlay();
 
 	OnActorBeginOverlap = [&](AActor* Other) -> void {
+		AGoal* Goal = dynamic_cast<AGoal*>(Other);
+		if (Goal)
+		{
+			AMyGM* GM = dynamic_cast<AMyGM*>(UGameplayStatics::GetGameMode());
+			if (GM)
+			{
+				GM->GameComplete();
+			}
+		}
 
+		AMonster* Monster = dynamic_cast<AMonster*>(Other);
+		if (Monster)
+		{
+			AMyGM* GM = dynamic_cast<AMyGM*>(UGameplayStatics::GetGameMode());
+			if (GM)
+			{
+				GM->GameOver();
+			}
+		}
 	};
 
 	//OnActorBeginOverlap = &APlayer::ProcessBeginOverlap;
@@ -90,9 +111,9 @@ void APlayer::ReceiveHit(AActor* Other)
 
 }
 
-void APlayer::ProcessBeginOverlap(AActor* OtherActor)
+void APlayer::ProcessBeginOverlap(AActor* Other)
 {
-
+	SDL_Log("ProcessBeginOverlap");
 }
 
 

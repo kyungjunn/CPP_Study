@@ -88,8 +88,10 @@ protected:
 	bool bIsRunning = true;
 
 	SDL_Window* MyWindow;
-	SDL_Renderer* MyRenderer;
+	SDL_Renderer* MyRenderer;	
 	SDL_Event MyEvent;
+	SDL_AudioSpec wav_spec;
+
 
 	float DeltaSeconds;
 	

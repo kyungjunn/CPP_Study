@@ -27,6 +27,11 @@ UWorld::~UWorld()
 	Actors.clear();
 }
 
+void UWorld::SetGameMode(AGameMode* NewGameMode)
+{
+	Actors.push_back(NewGameMode);
+}
+
 void UWorld::Load(std::string MapName)
 {
 	Actors.push_back(new AGameMode());
@@ -140,6 +145,14 @@ void UWorld::Load(std::string MapName)
 //		}
 //	}
 //}
+
+void UWorld::BeginPlay()
+{
+	for (auto Actor : Actors)
+	{
+		Actor->BeginPlay();
+	}
+}
 
 void UWorld::Tick()
 {

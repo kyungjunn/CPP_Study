@@ -3,7 +3,7 @@
 #include "World.h"
 #include "ResourceManager.h"
 #include "SpriteComponent.h"
-
+#include "CollisionComponent.h"
 
 
 AGoal::AGoal(int InX, int InY, char InMesh)
@@ -18,6 +18,9 @@ AGoal::AGoal(int InX, int InY, char InMesh)
 	SpriteComponent->Texture = TempResource.Texture;
 	SpriteComponent->ZOrder = 50;
 
+	CollisionComponent = CreateDefaultSubobject<UCollisionComponent>("Collision");
+	CollisionComponent->bIsGenerateHit = false;
+	CollisionComponent->bIsGenerateOverlap = true;	
 }
 
 AGoal::~AGoal()

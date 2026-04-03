@@ -2,6 +2,7 @@
 #include <vector>
 #include <string>
 
+class AGameMode;
 class AActor;
 
 class UWorld
@@ -9,6 +10,8 @@ class UWorld
 public:
 	UWorld();
 	virtual ~UWorld();
+
+	void SetGameMode(AGameMode* NewGameMode);
 
 	template<typename T> // T라는 임의의 자료형
 	AActor* SpawnActor() // AActor를 가리키는 스폰 함수
@@ -41,6 +44,8 @@ public:
 		return Actors;
 	}
 	
+	void BeginPlay();
+
 	void Tick();
 
 	void Render();
