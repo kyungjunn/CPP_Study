@@ -24,6 +24,8 @@ public:
 		return ZOrder;
 	}
 	
+	bool isCollision;
+	bool isGenerateOverlap;
 
 protected:
 	int X;

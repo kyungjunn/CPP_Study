@@ -1,14 +1,15 @@
 #include <iostream>
 #include "Engine.h"
 #include "World.h"
+#include "Component.h"
 
 #include <string>
 
 using namespace std;
 
+#include <vector>
 int SDL_main(int argc, char* argv[])
 {
-
 	//GENGINE->GetInstance();
 	//UEngine* MyEngine = UEngine::GetInstance();
 
