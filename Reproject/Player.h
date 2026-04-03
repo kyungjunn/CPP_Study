@@ -1,8 +1,10 @@
-#include "Actor.h"
+#include "Character.h"
 
 class USpriteAnimationComponent;
+class UCollisionComponent;
+class AActor;
 
-class APlayer : public AActor
+class APlayer : public ACharacter
 {
 public:
 	APlayer(int InX = 1, int InY = 1, char InMesh = 'P');
@@ -12,12 +14,11 @@ public:
 
 	virtual void Tick() override;
 
+	virtual void ReceiveHit(AActor* Other) override;
+
+	void ProcessBeginOverlap(AActor* OtherActor);
+
 	USpriteAnimationComponent* SpriteAnimationComponent;
 
-protected:
-	int SpriteIndexX = 0;
-	int Direction = 0;
-
-	float ElapsedTime = 0;
-	float ExecutionTime = 0.1f;
+	UCollisionComponent* CollisionComponent;
 };

@@ -2,6 +2,10 @@
 #include <string>
 #include <vector>
 #include "Actor.h"
+#include <functional>
+
+// 반환형 없고 겹친 애 액터 전방선언
+using FActorBeginOverlapSignature = std::function<void(class AActor* OtherActor)>;
 
 //#include "SDL.h"
 struct SDL_Surface;
@@ -38,6 +42,11 @@ public:
 	{
 		return Y;
 	}
+
+	// 무슨 컴포넌트가 부딪혔을 때 호출
+	FActorBeginOverlapSignature OnActorBeginOverlap;
+
+	virtual void ReceiveHit(class AActor* Other);
 
 protected:
 	int X;

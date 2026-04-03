@@ -18,6 +18,22 @@ public:
 		return NewActor;
 
 	}
+
+	template<typename T>
+	AActor* GetActorOfClass()
+	{
+		for (auto Actor : Actors)
+		{
+			T* Target = dynamic_cast<T*>(Actor);
+			if (Target)
+			{
+				return Target;
+			}
+		}
+
+		return nullptr;
+	}
+
 	void Load(std::string MapName);
 
 	inline std::vector<class AActor*>& GetActors() // &로 갯수가 늘어나도 빠르게

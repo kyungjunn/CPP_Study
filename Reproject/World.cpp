@@ -8,6 +8,7 @@
 #include "Goal.h"
 #include "RenderableComponent.h"
 #include "SpriteComponent.h"
+#include "GameMode.h"
 
 #include <fstream> // 파일 읽고쓰는 헤더
 #include <string>
@@ -28,6 +29,8 @@ UWorld::~UWorld()
 
 void UWorld::Load(std::string MapName)
 {
+	Actors.push_back(new AGameMode());
+
 	std::ifstream File(MapName); // 파일 열기
 
 	int Y = 0;
@@ -162,7 +165,7 @@ void UWorld::Render()
 		//Actor->Render();
 		for (auto Component : Actor->Components)
 		{
-			USpriteComponent* RenderComponent = dynamic_cast<USpriteComponent*>(Component);
+			IRenderableComponent* RenderComponent = dynamic_cast<IRenderableComponent*>(Component);
 			if (RenderComponent)
 			{
 				RenderComponent->Render();

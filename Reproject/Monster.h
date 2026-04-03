@@ -1,20 +1,18 @@
 #pragma once
-#include "Actor.h"
-class USpriteComponent;
+#include "Character.h"
 
-class AMonster : public AActor
+class USpriteComponent;
+class AActor;
+
+class AMonster : public ACharacter
 {
 public:
 	AMonster(int InX = 4, int InY = 4, char InMesh = 'M');
 	virtual ~AMonster();
 
-	virtual void BeginPlay() override;
-
 	virtual void Tick() override;
 
 	USpriteComponent* SpriteComponent;
-
-	//virtual void Render() override;	
 
 protected:
 	float ElapsedTime = 0;

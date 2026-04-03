@@ -1,9 +1,9 @@
 #include "Monster.h"
 #include "GameplayStatics.h"	
 #include "Engine.h"
+#include "World.h"
 #include "ResourceManager.h"
 #include "SpriteComponent.h"
-
 
 AMonster::AMonster(int InX, int InY, char InMesh)
 {
@@ -16,17 +16,13 @@ AMonster::AMonster(int InX, int InY, char InMesh)
 	SpriteComponent->Image = TempResource.Image;
 	SpriteComponent->Texture = TempResource.Texture;
 	SpriteComponent->ZOrder = 70;
+	ElapsedTime = 0.5f; // 몬스터 스피드 
 }
 
 AMonster::~AMonster()
 {
 }
 
-void AMonster::BeginPlay()
-{
-	__super::BeginPlay();
-
-}
 
 void AMonster::Tick()
 {
@@ -38,27 +34,21 @@ void AMonster::Tick()
 		ElapsedTime = 0;
 
 		int Direction = rand() % 5;
-		if (Direction == 0)
+		if (Direction == 0 && PredictMove(X, Y - 1))
 		{
 			Y--;
 		}
-		if (Direction == 1)
+		if (Direction == 1 && PredictMove(X, Y + 1))
 		{
 			Y++;
 		}
-		if (Direction == 2)
+		if (Direction == 2 && PredictMove(X - 1, Y))
 		{
 			X--;
 		}
-		if (Direction == 3)
+		if (Direction == 3 && PredictMove(X + 1, Y))
 		{
 			X++;
 		}
 	}
 }
-
-//void AMonster::Render()
-//{
-//	__super::Render();
-//
-//}

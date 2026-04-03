@@ -2,6 +2,8 @@
 #include "Actor.h"
 
 class USpriteComponent;
+class UCollisionComponent;
+class AActor;
 
 class AGoal : public AActor
 {
@@ -11,5 +13,6 @@ public:
 
 	USpriteComponent* SpriteComponent;
 
+protected:
 };
 

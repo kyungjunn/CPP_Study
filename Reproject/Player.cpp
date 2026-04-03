@@ -1,8 +1,10 @@
 #include "Player.h"
 #include "Engine.h"
+#include "World.h"
 #include "GameplayStatics.h"
 #include "ResourceManager.h"
 #include "SpriteAnimationComponent.h"
+#include "CollisionComponent.h"
 
 APlayer::APlayer(int InX, int InY, char InMesh)
 {
@@ -17,6 +19,9 @@ APlayer::APlayer(int InX, int InY, char InMesh)
 	SpriteAnimationComponent->ZOrder = 100;
 	SpriteAnimationComponent->ExecutionTime = 0.15f;
 
+	CollisionComponent = CreateDefaultSubobject<UCollisionComponent>("Collision");
+	CollisionComponent->bIsGenerateHit = true;
+	CollisionComponent->bIsGenerateOverlap = true;
 	// 리소스 파일에 저장한 텍스처가 있으면 가져오고 없으면 만들어.
 }
 
@@ -27,6 +32,12 @@ APlayer::~APlayer()
 void APlayer::BeginPlay()
 {
 	__super::BeginPlay();
+
+	OnActorBeginOverlap = [&](AActor* Other) -> void {
+
+	};
+
+	//OnActorBeginOverlap = &APlayer::ProcessBeginOverlap;
 }
 
 void APlayer::Tick()
@@ -35,33 +46,35 @@ void APlayer::Tick()
 
 	SDL_Event Event = GEngine->GetEvent();
 
-	
-
 	if (Event.type == SDL_KEYDOWN)
 	{
 		SDL_Keycode Keycode = Event.key.keysym.sym;
 
-		if (Keycode == SDLK_w)
+		if (Keycode == SDLK_w && PredictMove(X, Y - 1))
 		{
 			Y--;
 			// callback
 			// std::function<void>
 			SpriteAnimationComponent->Direction = 2; // 위
+			SpriteAnimationComponent->SpriteIndexX = 0;
 		}
-		if (Keycode == SDLK_s)
+		if (Keycode == SDLK_s && PredictMove(X, Y + 1))
 		{
 			Y++;
 			SpriteAnimationComponent->Direction = 3; // 아래
+			SpriteAnimationComponent->SpriteIndexX = 0;
 		}
-		if (Keycode == SDLK_a)
+		if (Keycode == SDLK_a && PredictMove(X - 1, Y))
 		{
 			X--;
 			SpriteAnimationComponent->Direction = 0; // 왼쪽
+			SpriteAnimationComponent->SpriteIndexX = 0;
 		}
-		if (Keycode == SDLK_d)
+		if (Keycode == SDLK_d && PredictMove(X + 1, Y))
 		{
 			X++;
 			SpriteAnimationComponent->Direction = 1; // 오른쪽
+			SpriteAnimationComponent->SpriteIndexX = 0;
 		}
 
 		if (Keycode == SDLK_ESCAPE)
@@ -70,5 +83,16 @@ void APlayer::Tick()
 		}
 	}
 
-	
+
 }
+void APlayer::ReceiveHit(AActor* Other)
+{
+
+}
+
+void APlayer::ProcessBeginOverlap(AActor* OtherActor)
+{
+
+}
+
+

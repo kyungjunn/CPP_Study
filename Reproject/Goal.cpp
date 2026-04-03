@@ -1,7 +1,9 @@
 #include "Goal.h"
 #include "Engine.h"
+#include "World.h"
 #include "ResourceManager.h"
 #include "SpriteComponent.h"
+
 
 
 AGoal::AGoal(int InX, int InY, char InMesh)
@@ -15,6 +17,7 @@ AGoal::AGoal(int InX, int InY, char InMesh)
 	SpriteComponent->Image = TempResource.Image;
 	SpriteComponent->Texture = TempResource.Texture;
 	SpriteComponent->ZOrder = 50;
+
 }
 
 AGoal::~AGoal()
