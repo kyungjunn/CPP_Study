@@ -2,10 +2,14 @@
 
 #include <Windows.h>
 #include "SDL.h"
+#include "SDL_mixer.h"
+#include "SDL_ttf.h"
 
 // 사용할 라이브러리 파일 추가
 #pragma comment(lib, "SDL2")
 #pragma comment(lib, "SDL2main")
+#pragma comment(lib, "SDL2_mixer")
+#pragma comment(lib, "SDL2_ttf")
 
 class UWorld;
 class UResourceManager;
@@ -90,8 +94,8 @@ protected:
 	SDL_Window* MyWindow;
 	SDL_Renderer* MyRenderer;	
 	SDL_Event MyEvent;
-	SDL_AudioSpec wav_spec;
 
+	Mix_Music* MyMusic;
 
 	float DeltaSeconds;
 	
