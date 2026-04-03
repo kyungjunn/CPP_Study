@@ -14,4 +14,5 @@ public:
 
 	virtual void Tick() = 0;
 
+	class AActor* Owner; // getset?
 };

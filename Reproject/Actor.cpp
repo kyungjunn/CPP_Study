@@ -2,20 +2,20 @@
 #include "Engine.h"
 #include <iostream>
 #include <Windows.h>
+#include "Component.h"
 
-AActor::AActor(int InX, int InY, char InMesh)
+AActor::AActor(int InX, int InY, char InMesh) : X(InX), Y(InY)
 {
-	X = InX;
-	Y = InY;
-	Mesh = InMesh;
-	R = 0;
-	G = 0;
-	B = 0;
 }
 
 AActor::~AActor()
 {
+	for (auto Component : Components)
+	{
+		delete Component;
+	}
 
+	Components.clear();
 }
 
 void AActor::BeginPlay()
@@ -24,16 +24,10 @@ void AActor::BeginPlay()
 
 void AActor::Tick()
 {
-
-}
-
-void AActor::Render()
-{
-	int TileSize = 30;
-
-	// ±×¸®±â
-	SDL_Rect DestinationRect = { X * TileSize, Y * TileSize, TileSize, TileSize };
-	SDL_RenderCopy(GEngine->GetRenderer(), Texture, nullptr, &DestinationRect);
+	for (auto Component : Components)
+	{
+		Component->Tick();
+	}
 }
 
 void AActor::SetActorLocation(int NewX, int NewY)

@@ -1,9 +1,13 @@
 #pragma once
 #include <string>
+#include <vector>
+#include "Actor.h"
 
 //#include "SDL.h"
 struct SDL_Surface;
 struct SDL_Texture;
+
+class UComponent;
 
 class AActor
 {
@@ -15,30 +19,47 @@ public:
 
 	virtual void Tick();
 
-	virtual void Render();
+	//virtual void Render();
 
 	virtual void SetActorLocation(int NewX, int NewY);
 
-	inline const int GetZOrder() 
+	/*inline const int GetZOrder() 
 	{
 		return ZOrder;
+	}*/
+
+	std::vector<UComponent*> Components;
+
+	inline int GetX() const
+	{
+		return X;
 	}
-	
-	bool isCollision;
-	bool isGenerateOverlap;
+	inline int GetY() const
+	{
+		return Y;
+	}
 
 protected:
 	int X;
 	int Y;
 
-	int R;
+	template<typename T>
+	T* CreateDefaultSubobject(std::string ComponentName)
+	{
+		T* Temp = new T;
+		Temp->Owner = this;
+		Components.push_back(Temp);
+
+		return Temp;
+	}
+	/*int R;
 	int G;
 	int B;
 
 	int ZOrder;
-	char Mesh;
+	char Mesh;*/
 
-	SDL_Surface* Image;
-	SDL_Texture* Texture;
+	//SDL_Surface* Image;
+	//SDL_Texture* Texture;
 };
 

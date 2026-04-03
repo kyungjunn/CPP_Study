@@ -1,5 +1,7 @@
 #pragma once
 #include "Actor.h"
+class USpriteComponent;
+
 class AMonster : public AActor
 {
 public:
@@ -10,7 +12,9 @@ public:
 
 	virtual void Tick() override;
 
-	virtual void Render() override;	
+	USpriteComponent* SpriteComponent;
+
+	//virtual void Render() override;	
 
 protected:
 	float ElapsedTime = 0;

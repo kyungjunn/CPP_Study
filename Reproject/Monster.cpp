@@ -2,21 +2,20 @@
 #include "GameplayStatics.h"	
 #include "Engine.h"
 #include "ResourceManager.h"
+#include "SpriteComponent.h"
+
 
 AMonster::AMonster(int InX, int InY, char InMesh)
 {
 	X = InX;
 	Y = InY;
-	Mesh = InMesh;
-	ZOrder = 50;
-
-	R = 255;
-	G = 255;
-	B = 0;
+	
+	SpriteComponent = CreateDefaultSubobject<USpriteComponent>("Sprite");
 
 	Resource TempResource = GEngine->GetResourceManager()->LoadTexture("Data/monster.bmp", true, 255, 255, 255);
-	Image = TempResource.Image;
-	Texture = TempResource.Texture;
+	SpriteComponent->Image = TempResource.Image;
+	SpriteComponent->Texture = TempResource.Texture;
+	SpriteComponent->ZOrder = 70;
 }
 
 AMonster::~AMonster()
@@ -58,8 +57,8 @@ void AMonster::Tick()
 	}
 }
 
-void AMonster::Render()
-{
-	__super::Render();
-
-}
+//void AMonster::Render()
+//{
+//	__super::Render();
+//
+//}

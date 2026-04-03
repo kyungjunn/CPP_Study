@@ -6,6 +6,8 @@
 #include "Floor.h"
 #include "Wall.h"
 #include "Goal.h"
+#include "RenderableComponent.h"
+#include "SpriteComponent.h"
 
 #include <fstream> // 파일 읽고쓰는 헤더
 #include <string>
@@ -84,25 +86,57 @@ void UWorld::Load(std::string MapName)
 	// 이게 더 빠르긴 함.
 	std::sort(Actors.begin(), Actors.end(), 
 		[](AActor* First, AActor* Second) -> int {
-			return First->GetZOrder() < Second->GetZOrder() ? 1 : 0;
+
+			USpriteComponent* FirstRenderComponent = nullptr;
+			for (auto Component : First->Components)
+			{
+				FirstRenderComponent = dynamic_cast<USpriteComponent*>(Component);
+				if (FirstRenderComponent)
+				{
+					break;
+				}
+			}
+
+			if (!FirstRenderComponent)
+			{
+				return 0;
+			}
+
+			USpriteComponent* SecondRenderComponent = nullptr ;
+			for (auto Component : Second->Components)
+			{
+				SecondRenderComponent = dynamic_cast<USpriteComponent*>(Component);
+				if (SecondRenderComponent)
+				{
+					break;
+				}
+			}
+
+			if (!SecondRenderComponent)
+			{
+				return 0;
+			}
+
+			return (FirstRenderComponent->ZOrder < SecondRenderComponent->ZOrder ? 1 : 0);
+			// First->GetZOrder() < Second->GetZOrder() ? 1 : 0;
 		});
 }
 
-void UWorld::Sort()
-{
-	for (int i = 0; i < Actors.size(); i++)
-	{
-		for (int j = 0; j < Actors.size(); j++)
-		{
-			if (Actors[i]->GetZOrder() < Actors[j]->GetZOrder())
-			{
-				auto Temp = Actors[i];
-				Actors[i] = Actors[j];
-				Actors[j] = Temp;
-			}
-		}
-	}
-}
+//void UWorld::Sort()
+//{
+//	for (int i = 0; i < Actors.size(); i++)
+//	{
+//		for (int j = 0; j < Actors.size(); j++)
+//		{
+//			if (Actors[i]->GetZOrder() < Actors[j]->GetZOrder())
+//			{
+//				auto Temp = Actors[i];
+//				Actors[i] = Actors[j];
+//				Actors[j] = Temp;
+//			}
+//		}
+//	}
+//}
 
 void UWorld::Tick()
 {
@@ -124,7 +158,16 @@ void UWorld::Render()
 	// 전체 액터 Render 실행
 	for (auto Actor : Actors)
 	{
-		Actor->Render();
+		// 모든 액터중에 Render 가능한 컴포넌트가 있으면 렌더 실행
+		//Actor->Render();
+		for (auto Component : Actor->Components)
+		{
+			USpriteComponent* RenderComponent = dynamic_cast<USpriteComponent*>(Component);
+			if (RenderComponent)
+			{
+				RenderComponent->Render();
+			}
+		}
 	}
 
 	GEngine->Flip();

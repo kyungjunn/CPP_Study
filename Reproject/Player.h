@@ -1,5 +1,7 @@
 #include "Actor.h"
 
+class USpriteAnimationComponent;
+
 class APlayer : public AActor
 {
 public:
@@ -10,10 +12,9 @@ public:
 
 	virtual void Tick() override;
 
-	virtual void Render() override;
+	USpriteAnimationComponent* SpriteAnimationComponent;
 
 protected:
-	int	CurrentFrame;
 	int SpriteIndexX = 0;
 	int Direction = 0;
 
