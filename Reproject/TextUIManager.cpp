@@ -21,65 +21,53 @@ UTextUIManager::UTextUIManager(SDL_Renderer* InRenderer)
 
 UTextUIManager::~UTextUIManager()
 {
-    if (MessageTexture)
-    {
-        SDL_DestroyTexture(MessageTexture);
-        MessageTexture = nullptr;
-    }
-
-    if (Font)
-    {
-        TTF_CloseFont(Font);
-        Font = nullptr;
-    }
+    SDL_DestroyTexture(MessageTexture);
+    MessageTexture = nullptr;
+    
+    TTF_CloseFont(Font);
+    Font = nullptr;
 
     TTF_Quit();
 }
 
 void UTextUIManager::ShowMessage(const std::string& InText)
 {
+    // 없으면 return 
     if (!Renderer || !Font)
     {
         return;
     }
 
-    if (MessageTexture)
-    {
-        SDL_DestroyTexture(MessageTexture);
-        MessageTexture = nullptr;
-    }
-
-    SDL_Color Color = { 255, 255, 255, 255 };
-    SDL_Surface* Surface = TTF_RenderUTF8_Blended(Font, InText.c_str(), Color);
-    if (!Surface)
-    {
-        SDL_Log("TTF_RenderUTF8_Blended failed: %s", TTF_GetError());
-        return;
-    }
-
+    // 글자 -> 그림 -> 텍스처
+    SDL_Color TextColor = { 255, 255, 255, 255 };
+    SDL_Surface* Surface = TTF_RenderText_Blended(Font, InText.c_str(), TextColor); // c_str : SDL은 char* 만 받기에 string을 char*로 변환해야함.
     MessageTexture = SDL_CreateTextureFromSurface(Renderer, Surface);
     MessageWidth = Surface->w;
     MessageHeight = Surface->h;
 
-    SDL_FreeSurface(Surface);
+    SDL_FreeSurface(Surface); // Surface 는 해제
 }
 
 void UTextUIManager::Render()
 {
+    // 없으면 return 
     if (!MessageTexture || !Renderer)
     {
         return;
     }
 
+    // 창 크기 구하기
     int WindowWidth = 0;
     int WindowHeight = 0;
-    SDL_GetRendererOutputSize(Renderer, &WindowWidth, &WindowHeight);
+    SDL_GetRendererOutputSize(Renderer, &WindowWidth, &WindowHeight); // 실제 그려지는 해상도
 
+    // 창의 중앙 구하기
     SDL_Rect Rect;
     Rect.w = MessageWidth;
     Rect.h = MessageHeight;
     Rect.x = (WindowWidth - MessageWidth) / 2;
     Rect.y = (WindowHeight - MessageHeight) / 2;
 
+    // 그리기
     SDL_RenderCopy(Renderer, MessageTexture, nullptr, &Rect);
 }

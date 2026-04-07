@@ -9,7 +9,8 @@ public:
     UTextUIManager(SDL_Renderer* InRenderer);
     virtual ~UTextUIManager();
 
-    void ShowMessage(const std::string& InText);
+    void ShowMessage(const std::string& InText); // 복사 X, 읽기 전용, 
+    //ShowMessage("게임종료!"); -> 이건 타입이 char*  => 이걸 string 으로 암시적 변환.
     void Render();
 
 private:

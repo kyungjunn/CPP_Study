@@ -15,6 +15,6 @@ public:
 protected:
 	bool bGameEnded;
 	float EndGameElapsedTime;
-	float EndGameDelay;
+	float EndGameDelay; // 게임 종료 후 딜레이 시간
 };
 

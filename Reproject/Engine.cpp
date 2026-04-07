@@ -67,7 +67,7 @@ void UEngine::Term()
 
 void UEngine::Run()
 {
-	AudioManager->PlayBGM();
+	AudioManager->PlayBGM(); // À½¾Ç Àç»ý
 
 	World->BeginPlay();
 

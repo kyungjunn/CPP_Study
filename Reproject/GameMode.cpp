@@ -41,8 +41,6 @@ void AGameMode::EndGame(const std::string& InMessage)
 	bGameEnded = true;
 	EndGameElapsedTime = 0.0f;
 
-	SDL_Log("%s", InMessage.c_str());
-
 	if (GEngine->GetTextUIManager())
 	{
 		GEngine->GetTextUIManager()->ShowMessage(InMessage);

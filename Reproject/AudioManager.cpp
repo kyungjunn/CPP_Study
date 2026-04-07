@@ -39,7 +39,7 @@ void UAudioManager::PlayBGM()
 {
     if (BackgroundMusic)
     {
-        Mix_PlayMusic(BackgroundMusic, -1);
+        Mix_PlayMusic(BackgroundMusic, -1); // 무한 반복
     }
 }
 
