@@ -1,5 +1,6 @@
 #pragma once
 #include "Actor.h"
+#include <string>
 
 class AGameMode : public AActor
 {
@@ -9,5 +10,11 @@ public:
 
 	virtual void Tick() override;
 	
+	void EndGame(const std::string& InMessage);
+
+protected:
+	bool bGameEnded;
+	float EndGameElapsedTime;
+	float EndGameDelay;
 };
 

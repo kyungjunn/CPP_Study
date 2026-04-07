@@ -16,6 +16,7 @@ void AMyGM::GameOver()
 	if (!bGameOver)
 	{
 		SDL_Log("Game Over");
+		EndGame("You Die ...");
 		bGameOver = true;
 	}
 }
@@ -27,7 +28,7 @@ void AMyGM::GameComplete()
 	if (!bGameComplte)
 	{
 		SDL_Log("Game Complete");
-
+		EndGame("Game Complete !!");
 		bGameComplte = true;
 	}
 }

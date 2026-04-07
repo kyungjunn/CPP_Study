@@ -1,12 +1,11 @@
 #include "GameMode.h"
-#include "Player.h"
-#include "Goal.h"
-#include "Monster.h"
 #include "Engine.h"
 #include "World.h"
+#include "TextUIManager.h"
 
 
-AGameMode::AGameMode()
+
+AGameMode::AGameMode() : bGameEnded(false), EndGameElapsedTime(0.0f), EndGameDelay(2.0f)
 {
 }
 
@@ -16,30 +15,37 @@ AGameMode::~AGameMode()
 
 void AGameMode::Tick()
 {
-	__super::Tick();
+	__super::Tick();	
 
-	//APlayer* Player = dynamic_cast<APlayer*>(GEngine->GetWorld()->GetActorOfClass<APlayer>());
-	//AMonster* Monster = dynamic_cast<AMonster*>(GEngine->GetWorld()->GetActorOfClass<AMonster>());
-	//AGoal* Goal = dynamic_cast<AGoal*>(GEngine->GetWorld()->GetActorOfClass<AGoal>());
+	if (bGameEnded)
+	{
+		EndGameElapsedTime += GEngine->GetDeltaSeconds();
 
-	//// 골인 지점에 도달했을 때
-	//if (Player && Goal)
-	//{
-	//	if (Player->GetX() == Goal->GetX() && Player->GetY() == Goal->GetY())
-	//	{
-	//		SDL_Log("Complete");
-	//		GEngine->Stop();
-	//	}
-	//}
+		if (EndGameElapsedTime >= EndGameDelay)
+		{
+			GEngine->Stop();
+		}
 
-	//// 플레이어가 몬스터와 만날 때
-	//if (Player && Monster)
-	//{
-	//	if (Player->GetX() == Monster->GetX() && Player->GetY() == Monster->GetY())
-	//	{
-	//		SDL_Log("You Die");
-	//		GEngine->Stop();
-	//	}
-	//}
-	
+		return;
+	}
+}
+
+void AGameMode::EndGame(const std::string& InMessage)
+{
+	// 게임이 끝났으면 무시
+	if (bGameEnded)
+	{
+		return;
+	}
+
+	bGameEnded = true;
+	EndGameElapsedTime = 0.0f;
+
+	SDL_Log("%s", InMessage.c_str());
+
+	if (GEngine->GetTextUIManager())
+	{
+		GEngine->GetTextUIManager()->ShowMessage(InMessage);
+	}
+
 }

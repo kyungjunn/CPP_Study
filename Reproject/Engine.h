@@ -13,6 +13,8 @@
 
 class UWorld;
 class UResourceManager;
+class UAudioManager;
+class UTextUIManager;
 
 class UEngine
 {
@@ -82,6 +84,15 @@ public:
 		return ResourceManager;
 	}
 
+	inline UAudioManager* GetAudioManager() const
+	{
+		return AudioManager;
+	}
+
+	inline UTextUIManager* GetTextUIManager() const
+	{
+		return TextUIManager;
+	}
 protected:
 	void Input();
 	void Tick();
@@ -95,11 +106,11 @@ protected:
 	SDL_Renderer* MyRenderer;	
 	SDL_Event MyEvent;
 
-	Mix_Music* MyMusic;
-
 	float DeltaSeconds;
 	
 	UResourceManager* ResourceManager;
+	UAudioManager* AudioManager;
+	UTextUIManager* TextUIManager;
 };
 
 #define GEngine			UEngine::GetInstance()

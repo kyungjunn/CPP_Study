@@ -2,6 +2,8 @@
 #include "Engine.h"
 #include "World.h"
 #include "ResourceManager.h"
+#include "AudioManager.h"
+#include "TextUIManager.h"
 #include <string>
 
 #include "SDL.h"
@@ -22,7 +24,6 @@ void UEngine::Init()
 	SDL_Init(SDL_INIT_EVERYTHING);
 
 	TTF_Font* MyFont = TTF_OpenFont("C:\\Windows\\Fonts\\arial.ttf", 30); // 폰트
-	MyMusic = Mix_LoadMUS("bgm.mp3"); // 음악 파일 로드
 	MyWindow = SDL_CreateWindow("Hello", 100, 100, 1024, 720, SDL_WINDOW_SHOWN);
 	MyRenderer = SDL_CreateRenderer(MyWindow, -1, 
 		SDL_RENDERER_ACCELERATED || SDL_RENDERER_PRESENTVSYNC 
@@ -33,6 +34,8 @@ void UEngine::Init()
 		//SDL_RENDERER_SOFTWARE || SDL_RENDERER_PRESENTVSYNC);
 
 	ResourceManager = new UResourceManager();
+	AudioManager = new UAudioManager();
+	TextUIManager = new UTextUIManager(MyRenderer);
 
 	bool bIsRunning = true;
 
@@ -43,25 +46,29 @@ void UEngine::Init()
 
 void UEngine::Term()
 {
-	// 만들었으면 지우기
-	Mix_FreeMusic(MyMusic); // 음악 재생 중지
-	Mix_CloseAudio(); // 음악 지우기
-	TTF_Quit();
-
-	SDL_DestroyRenderer(MyRenderer);
-	SDL_DestroyWindow(MyWindow);
-	SDL_Quit();
-
 	delete World;
 	TermBuffer();
 	World = nullptr;
 
 	delete ResourceManager;
+	ResourceManager = nullptr;
+
+	delete AudioManager;
+	AudioManager = nullptr;
+
+	delete TextUIManager;
+	TextUIManager = nullptr;
+
+	SDL_DestroyRenderer(MyRenderer);
+	SDL_DestroyWindow(MyWindow);
+
+	SDL_Quit();
 }
 
 void UEngine::Run()
 {
-	Mix_PlayMusic(MyMusic, 0); // 음악 파일 재생
+	AudioManager->PlayBGM();
+
 	World->BeginPlay();
 
 	Uint64 LastTime;
@@ -177,6 +184,8 @@ void UEngine::Tick()
 void UEngine::Render()
 {
 	World->Render();
+
+	TextUIManager->Render();
 
 	// 보내기 CPU -> GPU
 	// 많이 보낼 수록 느려짐.
