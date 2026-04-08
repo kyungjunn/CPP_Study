@@ -39,7 +39,6 @@ void AMyGM::GameComplete()
 	if (!bGameComplte)
 	{
 		SDL_Log("Game Complete"); // 로그
-		//EndGame("Game Complete !!"); // 텍스트 UI
 		bGameComplte = true;
 	}
 }

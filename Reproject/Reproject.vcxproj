@@ -135,7 +135,6 @@ copy $(SolutionDir)SDL2_mixer\lib\x64\SDL2_mixer.dll $(OutputPath)SDL2_mixer.dll
   <ItemGroup>
     <ClCompile Include="Actor.cpp" />
     <ClCompile Include="AudioComponent.cpp" />
-    <ClCompile Include="AudioManager.cpp" />
     <ClCompile Include="BGActor.cpp" />
     <ClCompile Include="Character.cpp" />
     <ClCompile Include="CollisionComponent.cpp" />
@@ -154,7 +153,6 @@ copy $(SolutionDir)SDL2_mixer\lib\x64\SDL2_mixer.dll $(OutputPath)SDL2_mixer.dll
     <ClCompile Include="SpriteComponent.cpp" />
     <ClCompile Include="TextRenderActor.cpp" />
     <ClCompile Include="TextRenderComponent.cpp" />
-    <ClCompile Include="TextUIManager.cpp" />
     <ClCompile Include="Wall.cpp" />
     <ClCompile Include="World.cpp" />
     <ClCompile Include="YoudieActor.cpp" />
@@ -162,7 +160,6 @@ copy $(SolutionDir)SDL2_mixer\lib\x64\SDL2_mixer.dll $(OutputPath)SDL2_mixer.dll
   <ItemGroup>
     <ClInclude Include="Actor.h" />
     <ClInclude Include="AudioComponent.h" />
-    <ClInclude Include="AudioManager.h" />
     <ClInclude Include="BGActor.h" />
     <ClInclude Include="Character.h" />
     <ClInclude Include="CollisionComponent.h" />
@@ -181,7 +178,6 @@ copy $(SolutionDir)SDL2_mixer\lib\x64\SDL2_mixer.dll $(OutputPath)SDL2_mixer.dll
     <ClInclude Include="SpriteComponent.h" />
     <ClInclude Include="TextRenderActor.h" />
     <ClInclude Include="TextRenderComponent.h" />
-    <ClInclude Include="TextUIManager.h" />
     <ClInclude Include="Wall.h" />
     <ClInclude Include="World.h" />
     <ClInclude Include="YoudieActor.h" />

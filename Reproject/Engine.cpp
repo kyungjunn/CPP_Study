@@ -23,42 +23,42 @@ void UEngine::Init()
 {
 	SDL_Init(SDL_INIT_EVERYTHING);
 
-	TTF_Font* MyFont = TTF_OpenFont("C:\\Windows\\Fonts\\arial.ttf", 30); // 폰트
 	MyWindow = SDL_CreateWindow("Hello", 100, 100, 1024, 720, SDL_WINDOW_SHOWN);
 	MyRenderer = SDL_CreateRenderer(MyWindow, -1, 
-		SDL_RENDERER_ACCELERATED || SDL_RENDERER_PRESENTVSYNC 
+		SDL_RENDERER_ACCELERATED || SDL_RENDERER_PRESENTVSYNC  
 		|| SDL_RENDERER_TARGETTEXTURE);
 
-	//if ((Mix_Init(MIX_INIT_MP3) & MIX_INIT_MP3) != MIX_INIT_MP3)
-	//{
-	//	SDL_Log("Mix_Init failed: %s", Mix_GetError());
-	//	return;
-	//}
-	
+	// SDL_mixer 초기화
+	if (Mix_Init(MIX_INIT_MP3) == 0) // 실패 시 0 반환 / 성공 시 초기화된 플래그값
+	{
+		SDL_Log("Mix_Init failed: %s", Mix_GetError());
+	}
 
-	if (!Mix_OpenAudio(MIX_DEFAULT_FREQUENCY, MIX_DEFAULT_FORMAT, MIX_DEFAULT_CHANNELS, 4096)) // (음질,  ,  , 청크 사이즈)
+	// (음질, 오디오 형식, 오디오 채널 수(1 Mono, 2 Stereo), 청크 사이즈) / 0 성공 / -1 실패
+	if (Mix_OpenAudio(MIX_DEFAULT_FREQUENCY, MIX_DEFAULT_FORMAT, MIX_DEFAULT_CHANNELS, 4096) < 0) 
 	{
 		SDL_Log("Mix_OpenAudio failed: %s", Mix_GetError());
+	}
+
+	// SDL_ttf 초기화
+	if (TTF_Init() == -1) // 0 성공 / -1 실패
+	{
+		SDL_Log("TTF_Init failed: %s", TTF_GetError());
 		return;
 	}
 
-	TTF_Init();
-		
-	//if (!TTF_Init())
-	//{
-	//	SDL_Log("TTF_Init failed: %s", TTF_GetError());
-	//	return;
-	//}
-
-	Font = TTF_OpenFont("./Data/font.ttf", 36);
+	// Font 로딩
+	Font = TTF_OpenFont("./Data/font.ttf", 100);
+	if (!Font)
+	{
+		SDL_Log("TTF_OpenFont failed: %s", TTF_GetError());
+	}
 
 	// 그래픽카드 같은 게 없을 때 SOFTWARE를 사용 ( 더 느려짐)
 	//MyRenderer = SDL_CreateRenderer(MyWindow, -1, 
 		//SDL_RENDERER_SOFTWARE || SDL_RENDERER_PRESENTVSYNC);
 
 	ResourceManager = new UResourceManager();
-	//AudioManager = new UAudioManager();
-	//TextUIManager = new UTextUIManager(MyRenderer);
 
 	bool bIsRunning = true;
 
@@ -85,12 +85,6 @@ void UEngine::Term()
 	delete ResourceManager;
 	ResourceManager = nullptr;
 
-	//delete AudioManager;
-	//AudioManager = nullptr;
-
-	//delete TextUIManager;
-	//TextUIManager = nullptr;
-
 	SDL_DestroyRenderer(MyRenderer);
 	SDL_DestroyWindow(MyWindow);
 
@@ -99,8 +93,6 @@ void UEngine::Term()
 
 void UEngine::Run()
 {
-	//AudioManager->PlayBGM(); // 음악 재생
-
 	World->BeginPlay();
 
 	Uint64 LastTime;

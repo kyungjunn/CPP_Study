@@ -25,5 +25,8 @@ protected:
 
 	SDL_Surface* Surface;
 	SDL_Texture* Texture;
+
+	int MessageWidth;
+	int MessageHeight;
 };
 
