@@ -54,14 +54,6 @@ protected:
 
 		return Temp;
 	}
-	/*int R;
-	int G;
-	int B;
 
-	int ZOrder;
-	char Mesh;*/
-
-	//SDL_Surface* Image;
-	//SDL_Texture* Texture;
 };
 

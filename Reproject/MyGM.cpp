@@ -1,5 +1,11 @@
 #include "MyGM.h"
 #include "SDL.h"
+#include "World.h"
+#include "Engine.h"
+#include "YoudieActor.h"
+#include "Component.h"
+#include "RenderableComponent.h"
+#include "TextRenderComponent.h"
 
 AMyGM::AMyGM()
 {
@@ -15,8 +21,13 @@ void AMyGM::GameOver()
 
 	if (!bGameOver)
 	{
+		AYoudieActor* TextActor = dynamic_cast<AYoudieActor*>(GEngine->GetWorld()->GetActorOfClass<AYoudieActor>());
+		if (TextActor)
+		{
+			TextActor->TextRenderComponent->bIsVisible = true;
+		}
+
 		SDL_Log("Game Over"); // 로그
-		EndGame("You Die ..."); // 텍스트 UI
 		bGameOver = true;
 	}
 }
@@ -28,7 +39,7 @@ void AMyGM::GameComplete()
 	if (!bGameComplte)
 	{
 		SDL_Log("Game Complete"); // 로그
-		EndGame("Game Complete !!"); // 텍스트 UI
+		//EndGame("Game Complete !!"); // 텍스트 UI
 		bGameComplte = true;
 	}
 }

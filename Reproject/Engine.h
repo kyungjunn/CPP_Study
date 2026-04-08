@@ -84,15 +84,16 @@ public:
 		return ResourceManager;
 	}
 
-	inline UAudioManager* GetAudioManager() const
-	{
-		return AudioManager;
-	}
+	//inline UAudioManager* GetAudioManager() const
+	//{
+	//	return AudioManager;
+	//}
 
-	inline UTextUIManager* GetTextUIManager() const
-	{
-		return TextUIManager;
-	}
+	//inline UTextUIManager* GetTextUIManager() const
+	//{
+	//	return TextUIManager;
+	//}
+	TTF_Font* Font;
 protected:
 	void Input();
 	void Tick();
@@ -109,8 +110,9 @@ protected:
 	float DeltaSeconds;
 	
 	UResourceManager* ResourceManager;
-	UAudioManager* AudioManager;
-	UTextUIManager* TextUIManager;
+	//UAudioManager* AudioManager;
+	//UTextUIManager* TextUIManager;
+	
 };
 
 #define GEngine			UEngine::GetInstance()

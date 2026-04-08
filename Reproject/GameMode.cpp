@@ -1,9 +1,6 @@
 #include "GameMode.h"
 #include "Engine.h"
 #include "World.h"
-#include "TextUIManager.h"
-
-
 
 AGameMode::AGameMode() : bGameEnded(false), EndGameElapsedTime(0.0f), EndGameDelay(2.0f)
 {
@@ -30,20 +27,8 @@ void AGameMode::Tick()
 	}
 }
 
-void AGameMode::EndGame(const std::string& InMessage)
+void AGameMode::EndGame(const std::string& InText)
 {
-	// 게임이 끝났으면 무시
-	if (bGameEnded)
-	{
-		return;
-	}
-
-	bGameEnded = true;
-	EndGameElapsedTime = 0.0f;
-
-	if (GEngine->GetTextUIManager())
-	{
-		GEngine->GetTextUIManager()->ShowMessage(InMessage);
-	}
+	
 
 }

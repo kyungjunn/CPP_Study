@@ -29,13 +29,36 @@ void UEngine::Init()
 		SDL_RENDERER_ACCELERATED || SDL_RENDERER_PRESENTVSYNC 
 		|| SDL_RENDERER_TARGETTEXTURE);
 
+	//if ((Mix_Init(MIX_INIT_MP3) & MIX_INIT_MP3) != MIX_INIT_MP3)
+	//{
+	//	SDL_Log("Mix_Init failed: %s", Mix_GetError());
+	//	return;
+	//}
+	
+
+	if (!Mix_OpenAudio(MIX_DEFAULT_FREQUENCY, MIX_DEFAULT_FORMAT, MIX_DEFAULT_CHANNELS, 4096)) // (음질,  ,  , 청크 사이즈)
+	{
+		SDL_Log("Mix_OpenAudio failed: %s", Mix_GetError());
+		return;
+	}
+
+	TTF_Init();
+		
+	//if (!TTF_Init())
+	//{
+	//	SDL_Log("TTF_Init failed: %s", TTF_GetError());
+	//	return;
+	//}
+
+	Font = TTF_OpenFont("./Data/font.ttf", 36);
+
 	// 그래픽카드 같은 게 없을 때 SOFTWARE를 사용 ( 더 느려짐)
 	//MyRenderer = SDL_CreateRenderer(MyWindow, -1, 
 		//SDL_RENDERER_SOFTWARE || SDL_RENDERER_PRESENTVSYNC);
 
 	ResourceManager = new UResourceManager();
-	AudioManager = new UAudioManager();
-	TextUIManager = new UTextUIManager(MyRenderer);
+	//AudioManager = new UAudioManager();
+	//TextUIManager = new UTextUIManager(MyRenderer);
 
 	bool bIsRunning = true;
 
@@ -46,6 +69,15 @@ void UEngine::Init()
 
 void UEngine::Term()
 {
+	// -> 리소스 매니저 바꿔야 함.
+	if (Font)
+	{
+		TTF_CloseFont(Font);
+	}
+	Mix_CloseAudio();
+
+	TTF_Quit();
+
 	delete World;
 	TermBuffer();
 	World = nullptr;
@@ -53,11 +85,11 @@ void UEngine::Term()
 	delete ResourceManager;
 	ResourceManager = nullptr;
 
-	delete AudioManager;
-	AudioManager = nullptr;
+	//delete AudioManager;
+	//AudioManager = nullptr;
 
-	delete TextUIManager;
-	TextUIManager = nullptr;
+	//delete TextUIManager;
+	//TextUIManager = nullptr;
 
 	SDL_DestroyRenderer(MyRenderer);
 	SDL_DestroyWindow(MyWindow);
@@ -67,7 +99,7 @@ void UEngine::Term()
 
 void UEngine::Run()
 {
-	AudioManager->PlayBGM(); // 음악 재생
+	//AudioManager->PlayBGM(); // 음악 재생
 
 	World->BeginPlay();
 
@@ -184,8 +216,6 @@ void UEngine::Tick()
 void UEngine::Render()
 {
 	World->Render();
-
-	TextUIManager->Render();
 
 	// 보내기 CPU -> GPU
 	// 많이 보낼 수록 느려짐.

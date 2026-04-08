@@ -20,6 +20,7 @@ UAudioManager::UAudioManager() : BackgroundMusic(nullptr)
     if (!BackgroundMusic)
     {
         SDL_Log("Mix_LoadMUS failed: %s", Mix_GetError());
+        return;
     }
 }
 
