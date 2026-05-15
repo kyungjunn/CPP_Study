@@ -28,6 +28,10 @@ void SendAll(SOCKET ReceiverSocket, char* Data, int Size)
             return;
         }
         TotalSendDataSize += SentBytes;
+        if (SentBytes <= 0)
+        {
+            return;
+        }
         printf("Send %dBytes %d Count\n", SentBytes, Count++);
 
     } while (TotalSendDataSize < WantSendDataSize);
