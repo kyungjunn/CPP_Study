@@ -9,8 +9,13 @@
 #include <atomic> // OS°í ¹¹°í ´Ù »ç¿ë °¡´É
 
 #pragma comment(lib, "ws2_32")
+#pragma comment(lib, "winmm")
 
-std::atomic<unsigned> ³»µ· = 10000;
+unsigned ³»µ· = 10000;
+
+// ÀÓ°è ¿µ¿ª(À§ÇèÁö¿ª) << µ¿½ÃÃ³¸®°¡ ¾ÈµÊ. 
+CRITICAL_SECTION ³»µ·CS1;
+CRITICAL_SECTION ³»µ·CS2;
 
 unsigned Increasement(void* Argument)
 {
@@ -20,8 +25,12 @@ unsigned Increasement(void* Argument)
 		// ¿øÀÚÀûÀ¸·Î ÀÛ¾÷(¿øÀÚÀûÀ¸·Î ´õÇÏ±â)
 		// °°Àº ¼¼ÁÙÀÌÁö¸¸ ÀÌ ¼¼ÁÙÀ» ¹­¾î¼­ »¯±âÁö ¾Êµµ·Ï
 		//InterlockedIncrement(&³»µ·); // Windows Àü¿ë
-		³»µ·.fetch_add(1); // atomic
-		//³»µ·++;
+		//³»µ·.fetch_add(1); // atomic
+		EnterCriticalSection(&³»µ·CS1);
+		EnterCriticalSection(&³»µ·CS2);
+		³»µ·++;
+		LeaveCriticalSection(&³»µ·CS2);
+		LeaveCriticalSection(&³»µ·CS1);
 		// 1. ±Û·Î¹ú º¯¼ö Á¢±Ù(¼ýÀÚ °¡Á®¿À±â) << ¿©±â¿¡¼­ ²÷±è
 		// 2. °¡Á®¿Â ¼ýÀÚ¿¡ +1
 		// 3. ´Ù½Ã ±Û·Î¹ú º¯¼ö¿¡ ÀúÀå
@@ -30,32 +39,85 @@ unsigned Increasement(void* Argument)
 	return 0;
 }
 
+
 unsigned Decreasement(void* Argument)
 {
 	for (int i = 0; i < 10000; ++i)
 	{
 		//InterlockedDecrement(&³»µ·);
-		//³»µ·--;
-		³»µ·.fetch_sub(1);
+
+		EnterCriticalSection(&³»µ·CS1);
+		EnterCriticalSection(&³»µ·CS2);
+		³»µ·--;
+		LeaveCriticalSection(&³»µ·CS1); // << µ¥µå¶ô. 1¹øÀÌ 2¹øÀâ°í 2¹øÀÌ 1¹øÀâ°í 
+		LeaveCriticalSection(&³»µ·CS2); // ¸Ó¸®Ã¤ Àâ°í ½Î¿ì´Â Áß.
+		//³»µ·.fetch_sub(1);
 	}
 	return 0;
 }
+
+void STLIncreasement()
+{
+	for (int i = 0; i < 10000; ++i)
+	{
+		//°æÁØÀÌµ·.fetch_add(1);
+	}
+}
+
+void STLDecreasement()
+{
+	for (int i = 0; i < 10000; ++i)
+	{
+		//°æÁØÀÌµ·.fetch_sub(1);
+	}
+}
+
 
 // race condition
 
 int main()
 {
+	//std::thread IncreaseThread1(STLIncreasement);
+	//std::thread DecreaseThread1(STLDecreasement);
+	//std::thread IncreaseThread2(STLIncreasement);
+	//std::thread DecreaseThread2(STLDecreasement);
+
+	//IncreaseThread1.join();
+	//DecreaseThread1.join();
+	//IncreaseThread2.join();
+	//DecreaseThread2.join();
+
 	//LPDWORD lpThreadId = 0;
 	//HANDLE ThreadHandle2 = CreateThread(0, 0, ThreadFunction, 0, 0, lpThreadId);
-	HANDLE ThreadHandle1 = (HANDLE)_beginthreadex(0, 0, &Increasement, 0, 0, 0);
-	HANDLE ThreadHandle2 = (HANDLE)_beginthreadex(0, 0, &Decreasement, 0, 0, 0);
-	HANDLE ThreadHandle3 = (HANDLE)_beginthreadex(0, 0, &Increasement, 0, 0, 0);
-	HANDLE ThreadHandle4 = (HANDLE)_beginthreadex(0, 0, &Decreasement, 0, 0, 0);
 
+	// ¹® ¸¸µé°í 
+	InitializeCriticalSection(&³»µ·CS1);
+	InitializeCriticalSection(&³»µ·CS2);
 
+	DWORD StartTime = timeGetTime();
+
+	//kernel object, signal -> signal, non signal
+	HANDLE ThreadHandles[4];
+	ThreadHandles[0] = (HANDLE)_beginthreadex(0, 0, &Increasement, 0, 0, 0);
+	ThreadHandles[1] = (HANDLE)_beginthreadex(0, 0, &Decreasement, 0, 0, 0);
+	ThreadHandles[2] = (HANDLE)_beginthreadex(0, 0, &Increasement, 0, 0, 0);
+	ThreadHandles[3] = (HANDLE)_beginthreadex(0, 0, &Decreasement, 0, 0, 0);
+
+	//thread, signal
+	WaitForMultipleObjects(4, ThreadHandles, TRUE, INFINITE);
+	//WaitForSingleObject(ThreadHandle1, INFINITE);
+	//WaitForSingleObject(ThreadHandle2, INFINITE);
+	//WaitForSingleObject(ThreadHandle3, INFINITE);
+	//WaitForSingleObject(ThreadHandle4, INFINITE);
 
 	//printf("³» µ·Àº? %d\n", ³»µ·);
 	std::cout << "³» µ·Àº? " << ³»µ· << std::endl;
+
+	std::cout << timeGetTime() - StartTime << std::endl;
+
+	// ¹® »Ñ½Ã°í
+	DeleteCriticalSection(&³»µ·CS1);
+	DeleteCriticalSection(&³»µ·CS2);
 
 	return 0;
 }
