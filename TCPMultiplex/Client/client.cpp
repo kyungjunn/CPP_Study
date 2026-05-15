@@ -1,4 +1,5 @@
 #define _WINSOCK_DEPRECATED_NO_WARNINGS
+#define FD_SETSIZE		100
 
 #include <WinSock2.h> // ¾ê°¡ ³ªÁß¿¡ ³ª¿Â°Å¶ó include °¡ ÁßÃ¸µÊ. ±×·¡¼­ ¸ÕÀú ÇØ¾ßµÊ.
 #include <Windows.h>
@@ -14,6 +15,9 @@
 #pragma comment(lib, "winmm")
 
 unsigned ³»µ· = 10000;
+//std::atomic<long> ³»µ· = 10000;
+
+std::atomic<long> LockObject;
 
 // spin lock
 // ÀÓ°è ¿µ¿ª(À§ÇèÁö¿ª) << µ¿½ÃÃ³¸®°¡ ¾ÈµÊ. 
@@ -22,6 +26,42 @@ CRITICAL_SECTION ³»µ·CS2;
 
 std::mutex ³»µ·Mutex;
 
+volatile long Lock = 0; // 0 : unLock , 1 : Lock
+
+#define SPINLOCK(LOCK)  while (InterlockedCompareExchange(LOCK, 1, 0) != 0) \
+{\
+ YieldProcessor();\
+}
+
+#define SPINUNLOCK(LOCK)  InterlockedExchange(LOCK, 0)
+
+//EnterCritialSection, mutex.lock()
+void SpinLock(volatile long* Lock)
+{
+	//spinlock
+	int SpinCount = 0;
+	const int MaxSpintCount = 10;
+
+	// Àá°å´Ù¸é
+	while (InterlockedCompareExchange(Lock, 1, 0) != 0)
+	{
+		SpinCount++;
+		if (SpinCount > MaxSpintCount)
+		{
+			Sleep(0);
+			SpinCount = 0;
+		}
+
+		YieldProcessor(); // -> ´Ù¸¥ ÇÁ·Î¼¼¼­·Î ³Ñ±è
+	}
+}
+
+
+void SpinUnLock(volatile long* Lock)
+{
+	// atomic
+	InterlockedExchange(Lock, 0);
+}
 unsigned Increasement(void* Argument)
 {
 	for (int i = 0; i < 10000; ++i)
@@ -34,8 +74,12 @@ unsigned Increasement(void* Argument)
 		//EnterCriticalSection(&³»µ·CS1);
 		//EnterCriticalSection(&³»µ·CS2);
 		//³»µ·Mutex.lock();
-		std::lock_guard<std::mutex> lock(³»µ·Mutex);
+		//std::lock_guard<std::mutex> lock(³»µ·Mutex);
+		//SpinLock(&Lock); // ¾È Àá°åÀ¸¸é Àá±Ù´Ù.
+		SPINLOCK(&Lock);
 		³»µ·++;
+		SPINUNLOCK(&Lock);
+		//SpinUnLock(&Lock);
 		//³»µ·Mutex.unlock();
 		//LeaveCriticalSection(&³»µ·CS2);
 		//LeaveCriticalSection(&³»µ·CS1);
@@ -54,11 +98,13 @@ unsigned Decreasement(void* Argument)
 	{
 		//InterlockedDecrement(&³»µ·);
 
-		EnterCriticalSection(&³»µ·CS1);
-		EnterCriticalSection(&³»µ·CS2);
+		//EnterCriticalSection(&³»µ·CS1);
+		//EnterCriticalSection(&³»µ·CS2);
+		SpinLock(&Lock); // ¾È Àá°åÀ¸¸é Àá±Ù´Ù.
 		³»µ·--;
-		LeaveCriticalSection(&³»µ·CS1); // << µ¥µå¶ô. 1¹øÀÌ 2¹øÀâ°í 2¹øÀÌ 1¹øÀâ°í 
-		LeaveCriticalSection(&³»µ·CS2); // ¸Ó¸®Ã¤ Àâ°í ½Î¿ì´Â Áß.
+		SpinUnLock(&Lock);
+		//LeaveCriticalSection(&³»µ·CS1); // << µ¥µå¶ô. 1¹øÀÌ 2¹øÀâ°í 2¹øÀÌ 1¹øÀâ°í 
+		//LeaveCriticalSection(&³»µ·CS2); // ¸Ó¸®Ã¤ Àâ°í ½Î¿ì´Â Áß.
 		//³»µ·.fetch_sub(1);
 	}
 	return 0;
