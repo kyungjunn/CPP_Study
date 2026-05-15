@@ -7,15 +7,20 @@
 #include <process.h>
 
 #include <atomic> // OS고 뭐고 다 사용 가능
+#include <thread>
+#include <mutex>
 
 #pragma comment(lib, "ws2_32")
 #pragma comment(lib, "winmm")
 
 unsigned 내돈 = 10000;
 
+// spin lock
 // 임계 영역(위험지역) << 동시처리가 안됨. 
 CRITICAL_SECTION 내돈CS1;
 CRITICAL_SECTION 내돈CS2;
+
+std::mutex 내돈Mutex;
 
 unsigned Increasement(void* Argument)
 {
@@ -26,11 +31,14 @@ unsigned Increasement(void* Argument)
 		// 같은 세줄이지만 이 세줄을 묶어서 뺏기지 않도록
 		//InterlockedIncrement(&내돈); // Windows 전용
 		//내돈.fetch_add(1); // atomic
-		EnterCriticalSection(&내돈CS1);
-		EnterCriticalSection(&내돈CS2);
+		//EnterCriticalSection(&내돈CS1);
+		//EnterCriticalSection(&내돈CS2);
+		//내돈Mutex.lock();
+		std::lock_guard<std::mutex> lock(내돈Mutex);
 		내돈++;
-		LeaveCriticalSection(&내돈CS2);
-		LeaveCriticalSection(&내돈CS1);
+		//내돈Mutex.unlock();
+		//LeaveCriticalSection(&내돈CS2);
+		//LeaveCriticalSection(&내돈CS1);
 		// 1. 글로벌 변수 접근(숫자 가져오기) << 여기에서 끊김
 		// 2. 가져온 숫자에 +1
 		// 3. 다시 글로벌 변수에 저장
