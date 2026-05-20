@@ -1,16 +1,21 @@
-#define _WINSOCK_DEPRECATED_NO_WARNINGS
+ï»¿#define _WINSOCK_DEPRECATED_NO_WARNINGS
+
+#include "ChatPacket.h"
 
 #include <WinSock2.h>
+#include <Windows.h>
 #include <iostream>
 #include <process.h>
 
 #pragma comment(lib, "ws2_32")
+#pragma comment(lib, "NetCommon")
 
 using namespace std;
 
-// recv, send °¡ °°Àº ¹öÆÛ¸¦ »ç¿ëÇÏ¸é ¹öÆÛ ¿À¿°
-// °¡Àå ½¬¿î ¹æ¹ı -> ¹öÆÛ µÎ °³ ¸¸µé±â
-// ¹öÆÛ ÇÏ³ª¸¦ »ç¿ëÇÑ´Ù¸é Lock -> ±Ùµ¥ ½º·¹µå ÀÚÃ¼°¡ blocking ÀÌ¶ó ¿ìÂ«
+
+// recv, send ê°€ ê°™ì€ ë²„í¼ë¥¼ ì‚¬ìš©í•˜ë©´ ë²„í¼ ì˜¤ì—¼
+// ê°€ì¥ ì‰¬ìš´ ë°©ë²• -> ë²„í¼ ë‘ ê°œ ë§Œë“¤ê¸°
+// ë²„í¼ í•˜ë‚˜ë¥¼ ì‚¬ìš©í•œë‹¤ë©´ Lock -> ê·¼ë° ìŠ¤ë ˆë“œ ìì²´ê°€ blocking ì´ë¼ ìš°ì§¬
 char SendBuffer[1024] = { 0, };
 char RecvBuffer[1024] = { 0, };
 
@@ -23,6 +28,7 @@ unsigned WINAPI RecvThread(void* Argument)
 
 	while (IsRecvThreadRunning)
 	{
+		// 1ã„·1ë¡œ ì£¼ê³  ë°›ëŠ”ë‹¤.
 		int RecvBytes = recv(ServerSocket, RecvBuffer, sizeof(RecvBuffer), 0);
 		if (RecvBytes <= 0)
 		{
@@ -30,7 +36,10 @@ unsigned WINAPI RecvThread(void* Argument)
 			break;
 		}
 
-		cout << "server" << RecvBuffer << " send" << endl;
+		ChatPacket Data;
+		Data.Parse(RecvBuffer);
+
+		cout << Data.UserID << " : " << Data.Message << " " << Data.Gold << endl;
 	}
 
 	return 0;
@@ -38,7 +47,7 @@ unsigned WINAPI RecvThread(void* Argument)
 
 unsigned WINAPI SendThread(void* Argument)
 {
-	// Ã¥ÀÓÀº »ç¿ëÇÏ´Â ³ğÀÌ Áø´Ù.
+	// ì±…ì„ì€ ì‚¬ìš©í•˜ëŠ” ë†ˆì´ ì§„ë‹¤.
 	SOCKET ServerSocket = *(SOCKET*)Argument;
 
 	char* P = new char[1024];
@@ -47,7 +56,14 @@ unsigned WINAPI SendThread(void* Argument)
 	{
 		cin.getline(SendBuffer, sizeof(SendBuffer));
 
-		int SentBytes = send(ServerSocket, SendBuffer, sizeof(SendBuffer), 0);
+		ChatPacket Data;
+		Data.UserID = "kyungjunn";
+		Data.Message = SendBuffer;
+		Data.Gold = 1000;
+		std::string JSONString = Data.ToString();
+
+		//ê·¸ëƒ¥ 1ëŒ€1ë¡œ ì£¼ê³  ë°›ëŠ”ë‹¤.
+		int SentBytes = send(ServerSocket, JSONString.c_str(), (int)JSONString.length(), 0);
 		if (SentBytes <= 0)
 		{
 			cout << "send fail." << endl;
@@ -83,11 +99,11 @@ int main()
 	// nonblocking, asynchrous
 	ThreadHandles[0] = (HANDLE)_beginthreadex(0, 0, RecvThread, &ServerSocket, 0, 0);
 	ThreadHandles[1] = (HANDLE)_beginthreadex(0, 0, SendThread, &ServerSocket, 0, 0);
-	//ResumeThread(ThreadHandles[0]); // ÀÏ½Ã Áß´ÜµÈ ½º·¹µå ´Ù½Ã ½ÃÀÛ
+	//ResumeThread(ThreadHandles[0]); // ì¼ì‹œ ì¤‘ë‹¨ëœ ìŠ¤ë ˆë“œ ë‹¤ì‹œ ì‹œì‘
 	//ResumeThread(ThreadHandles[1]);
-	SuspendThread(ThreadHandles[0]); // ½º·¹µå ÀÏ½Ã Áß´Ü
+	SuspendThread(ThreadHandles[0]); // ìŠ¤ë ˆë“œ ì¼ì‹œ ì¤‘ë‹¨
 	//SuspendThread(ThreadHandles[1]);
-	
+
 
 	// blocking
 	WaitForMultipleObjects(2, ThreadHandles, FALSE, INFINITE);

@@ -2,10 +2,13 @@
 
 #include <WinSock2.h>
 #include <iostream>
+#include "json.hpp"
 
 #pragma comment(lib, "ws2_32")
+#pragma comment(lib, "NetCommon")
 
 using namespace std;
+using json = nlohmann::json;
 
 char Buffer[1024] = { 0, };
 
@@ -25,7 +28,7 @@ int main()
 	ListenSockAddr.sin_port = htons(35000);
 
 	// already use port  이미 포트 사용 중
-	bind(ListenSocket, (SOCKADDR*)&ListenSockAddr, sizeof(ListenSockAddr));
+	::bind(ListenSocket, (SOCKADDR*)&ListenSockAddr, sizeof(ListenSockAddr));
 
 	listen(ListenSocket, SOMAXCONN);
 
@@ -77,6 +80,7 @@ int main()
 				else
 				{
 					// Data Receive
+					memset(Buffer, 0, sizeof(Buffer));
 					int RecvBytes = recv(ReadSockets.fd_array[i], Buffer, sizeof(Buffer), 0);
 					if (RecvBytes <= 0)
 					{
@@ -98,7 +102,7 @@ int main()
 
 						getpeername(ReadSockets.fd_array[i], (SOCKADDR*)&ClientSockAddr, &ClientSockLength);
 
-						cout << "client(" << inet_ntoa(ClientSockAddr.sin_addr) << endl;
+						cout << "client(" << inet_ntoa(ClientSockAddr.sin_addr);
 						cout << ")" << Buffer << " send" << endl;
 						// 모든 접속한 유저한테 전달
 
@@ -108,7 +112,7 @@ int main()
 							// 클라이언트에서는 처리 안함.
 							if (ReadSockets.fd_array[j] != ListenSocket)
 							{
-								int SentBytes = send(ReadSockets.fd_array[j], Buffer, sizeof(Buffer), 0);
+								int SentBytes = send(ReadSockets.fd_array[j], Buffer, strlen(Buffer), 0);
 								if (SentBytes <= 0)
 								{
 									SOCKADDR_IN ClosedSockAddr;
@@ -129,10 +133,6 @@ int main()
 			}
 		}
 	}
-
-
-
-
 
 
 	closesocket(ListenSocket);
