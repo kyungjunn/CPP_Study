@@ -116,6 +116,8 @@ int main()
 					}
 					else
 					{
+						unsigned short FinalDataLength = 0;
+
 						// 수신된 JSON 데이터 파싱
 						rapidjson::Document Doc;
 						Doc.Parse(Buffer);
@@ -157,7 +159,7 @@ int main()
 							memcpy(Buffer, StreamBuffer.GetString(), StreamBuffer.GetSize());
 
 							// 바뀐 패킷 사이즈 재설정
-							PacketSize = (unsigned short)StreamBuffer.GetSize();
+							FinalDataLength = (unsigned short)StreamBuffer.GetSize();
 						}
 						// 채팅 패킷
 						else if (Doc.HasMember("Message"))
@@ -170,6 +172,8 @@ int main()
 
 							cout << "[client chat] (" << inet_ntoa(ClientSockAddr.sin_addr);
 							cout << ")" << Buffer << " send" << endl;
+
+							FinalDataLength = (unsigned short)strlen(Buffer);
 						}
 
 
@@ -180,11 +184,12 @@ int main()
 							// 클라이언트에서는 처리 안함.
 							if (ReadSockets.fd_array[j] != ListenSocket)
 							{
-								PacketSize = (unsigned short)strlen(Buffer);
-								PacketSize = htons(PacketSize);
+								unsigned short NetworkPacketSize = htons(FinalDataLength);
+
+
 
 								//header
-								int SentBytes = SendAll(ReadSockets.fd_array[j], (char*)&PacketSize, 2);
+								int SentBytes = SendAll(ReadSockets.fd_array[j], (char*)&NetworkPacketSize, 2);
 								if (SentBytes <= 0)
 								{
 									cout << "header send fail." << endl;
@@ -192,7 +197,7 @@ int main()
 								}
 
 								//Data
-								SentBytes = SendAll(ReadSockets.fd_array[j], Buffer, ntohs(PacketSize));
+								SentBytes = SendAll(ReadSockets.fd_array[j], Buffer, FinalDataLength);
 								if (SentBytes <= 0)
 								{
 									cout << "Data send fail." << endl;
