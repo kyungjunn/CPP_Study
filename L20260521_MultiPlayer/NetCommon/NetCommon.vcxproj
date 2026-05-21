@@ -144,6 +144,7 @@
     <ClInclude Include="pch.h" />
     <ClInclude Include="S2C_Destroy.h" />
     <ClInclude Include="S2C_Login.h" />
+    <ClInclude Include="S2C_Move.h" />
     <ClInclude Include="S2C_Spawn.h" />
   </ItemGroup>
   <ItemGroup>
@@ -161,6 +162,7 @@
     </ClCompile>
     <ClCompile Include="S2C_Destroy.cpp" />
     <ClCompile Include="S2C_Login.cpp" />
+    <ClCompile Include="S2C_Move.cpp" />
     <ClCompile Include="S2C_Spawn.cpp" />
   </ItemGroup>
   <ItemGroup>

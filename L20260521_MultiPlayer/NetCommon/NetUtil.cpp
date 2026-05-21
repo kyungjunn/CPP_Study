@@ -2,6 +2,13 @@
 
 #include "NetUtil.h"
 
+int RecvAll(SOCKET ReceiverSocket, char* OutData, int Size)
+{
+	int RecvBytes = recv(ReceiverSocket, OutData, Size, MSG_WAITALL);
+	
+	return RecvBytes;
+}
+
 int SendAll(SOCKET ReceiverSocket, const char* Data, int Size)
 {
 	int TotalSendDataSize = 0;
