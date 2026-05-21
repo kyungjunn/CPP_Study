@@ -129,9 +129,6 @@ int main()
 							// 클라이언트가 보낸 UserID 문자열을 임시 저장
 							string userId = Doc["UserID"].GetString();
 
-							int clientRequestX = Doc["PositionX"].GetInt();
-							int clientRequestY = Doc["PositionY"].GetInt();
-
 							if (Doc.HasMember("InputKey"))
 							{
 								int inputKey = Doc["InputKey"].GetInt();
@@ -139,11 +136,6 @@ int main()
 								else if (inputKey == 's') currentY++;
 								else if (inputKey == 'a') currentX--;
 								else if (inputKey == 'd') currentX++;
-							}
-							else
-							{
-								currentX = clientRequestX;
-								currentY = clientRequestY;
 							}
 
 							// 서버의 데이터 업데이트
