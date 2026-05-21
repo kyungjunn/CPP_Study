@@ -122,6 +122,20 @@ int main()
 
 	cout << "client connect" << endl;
 
+	C2S_Login LoginData;
+	LoginData.UserID = "kyungjun";
+	LoginData.HashKey = "1q2w3e4e4r5r";
+
+	Header LoginHeader;
+	LoginHeader.MakeHeader(static_cast<unsigned short>(LoginData.ToString().length()), EPacketType::C2S_Login);
+
+	// Login ฟไรป
+	SendAll(ServerSocket, (char*)&LoginHeader, HeaderSize);
+	SendAll(ServerSocket, LoginData.ToString().c_str(), (int)LoginData.ToString().length());
+
+
+
+
 	HANDLE ThreadHandles[2] = { 0, };
 
 	//nonblocking, asynchrous
