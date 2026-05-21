@@ -1,9 +1,10 @@
-#define _WINSOCK_DEPRECATED_NO_WARNINGS
+ï»¿#define _WINSOCK_DEPRECATED_NO_WARNINGS
 
 #include "NetUtil.h"
 
 #include <WinSock2.h>
 #include <iostream>
+#include <map>
 #include "json.hpp"
 
 #pragma comment(lib, "ws2_32")
@@ -13,6 +14,8 @@ using namespace std;
 using json = nlohmann::json;
 
 char Buffer[1024] = { 0, };
+
+map<SOCKET, pair<int, int>> PlayerPositions;
 
 // blocking, synchrous, multiplexing(polling)
 int main()
@@ -29,7 +32,7 @@ int main()
 	ListenSockAddr.sin_addr.s_addr = INADDR_ANY;
 	ListenSockAddr.sin_port = htons(35000);
 
-	// already use port  ÀÌ¹Ì Æ÷Æ® »ç¿ë Áß
+	// already use port  ì´ë¯¸ í¬íŠ¸ ì‚¬ìš© ì¤‘
 	::bind(ListenSocket, (SOCKADDR*)&ListenSockAddr, sizeof(ListenSockAddr));
 
 	listen(ListenSocket, SOMAXCONN);
@@ -50,22 +53,24 @@ int main()
 	{
 		CopyReadSockets = ReadSockets;
 
-		//0.5ÃÊ¾¿ blocking
+		//0.5ì´ˆì”© blocking
 		int ChangeCount = select(0, &CopyReadSockets, 0, 0, &TimeOut);
 
 		if (ChangeCount <= 0)
 		{
 			// Server Work
-			// 0.5ÃÊ ÇÑ ¹ø ¼­¹ö ÀÛ¾÷ ÇÏ´Â °Å
+			// 0.5ì´ˆ í•œ ë²ˆ ì„œë²„ ì‘ì—… í•˜ëŠ” ê±°
 			continue;
 		}
 
-		// ¹º°¡ ÀÚ·á°¡ ÀÖµû
+		// ë­”ê°€ ìë£Œê°€ ìˆë”°
 		for (int i = 0; i < (int)ReadSockets.fd_count; ++i)
 		{
-			if (FD_ISSET(ReadSockets.fd_array[i], &CopyReadSockets))
+			SOCKET CurrentSocket = ReadSockets.fd_array[i];
+
+			if (FD_ISSET(CurrentSocket, &CopyReadSockets))
 			{
-				if (ReadSockets.fd_array[i] == ListenSocket)
+				if (CurrentSocket == ListenSocket)
 				{
 					//connect process
 					SOCKADDR_IN ClientSockAddr;
@@ -78,50 +83,107 @@ int main()
 					cout << "connect client " << inet_ntoa(ClientSockAddr.sin_addr) << endl;
 
 					FD_SET(ClientSocket, &ReadSockets);
+
+					PlayerPositions[ClientSocket] = make_pair(10, 10);
 				}
 				else
 				{
 					// Data Receive
 					//header
 					unsigned short PacketSize = 0;
-					int RecvBytes = recv(ReadSockets.fd_array[i], (char*)&PacketSize, sizeof(PacketSize), MSG_WAITALL);
+					int RecvBytes = recv(CurrentSocket, (char*)&PacketSize, sizeof(PacketSize), MSG_WAITALL);
 					if (RecvBytes <= 0)
 					{
 						cout << "header recv fail " << endl;
-						DisconnectSocket(ReadSockets.fd_array[i], &ReadSockets);
+						PlayerPositions.erase(CurrentSocket); // ì ‘ì† ëŠê¸°ë©´ ë§µì—ì„œ ì‚­ì œ
+						DisconnectSocket(CurrentSocket, &ReadSockets);
 						continue;
 					}
 
 					PacketSize = ntohs(PacketSize);
-
 					memset(Buffer, 0, sizeof(Buffer));
 
 					//data JSON
-					RecvBytes = recv(ReadSockets.fd_array[i], Buffer, PacketSize, MSG_WAITALL);
+					RecvBytes = recv(CurrentSocket, Buffer, PacketSize, MSG_WAITALL);
 
 					//int RecvBytes = recv(ReadSockets.fd_array[i], Buffer, sizeof(Buffer), 0);
 					if (RecvBytes <= 0)
 					{
 						cout << "data recv fail " << endl;
-						DisconnectSocket(ReadSockets.fd_array[i], &ReadSockets);
+						PlayerPositions.erase(CurrentSocket); 
+						DisconnectSocket(CurrentSocket, &ReadSockets);
 						continue;
 					}
 					else
 					{
-						SOCKADDR_IN ClientSockAddr;
-						memset(&ClientSockAddr, 0, sizeof(ClientSockAddr));
-						int ClientSockLength = sizeof(ClientSockAddr);
+						// ìˆ˜ì‹ ëœ JSON ë°ì´í„° íŒŒì‹±
+						rapidjson::Document Doc;
+						Doc.Parse(Buffer);
 
-						getpeername(ReadSockets.fd_array[i], (SOCKADDR*)&ClientSockAddr, &ClientSockLength);
+						// í”Œë ˆì´ì–´ ì´ë™ íŒ¨í‚·
+						if (Doc.HasMember("PositionX"))
+						{
+							int currentX = PlayerPositions[CurrentSocket].first;
+							int currentY = PlayerPositions[CurrentSocket].second;
 
-						cout << "client(" << inet_ntoa(ClientSockAddr.sin_addr);
-						cout << ")" << Buffer << " send" << endl;
+							// í´ë¼ì´ì–¸íŠ¸ê°€ ë³´ë‚¸ UserID ë¬¸ìì—´ì„ ì„ì‹œ ì €ì¥
+							string userId = Doc["UserID"].GetString();
 
-						// ¸ğµç Á¢¼ÓÇÑ À¯ÀúÇÑÅ× Àü´Ş
+							int clientRequestX = Doc["PositionX"].GetInt();
+							int clientRequestY = Doc["PositionY"].GetInt();
+
+							if (Doc.HasMember("InputKey"))
+							{
+								int inputKey = Doc["InputKey"].GetInt();
+								if (inputKey == 'w') currentY--;
+								else if (inputKey == 's') currentY++;
+								else if (inputKey == 'a') currentX--;
+								else if (inputKey == 'd') currentX++;
+							}
+							else
+							{
+								currentX = clientRequestX;
+								currentY = clientRequestY;
+							}
+
+							// ì„œë²„ì˜ ë°ì´í„° ì—…ë°ì´íŠ¸
+							PlayerPositions[CurrentSocket] = make_pair(currentX, currentY);
+
+							cout << "[client move] " << userId << " -> (" << currentX << ", " << currentY << ")" << endl;
+
+							// ë°”ë€ ì¢Œí‘œë¥¼ JSON ë°ì´í„°ì— ì£¼ì…
+							Doc["PositionX"].SetInt(currentX);
+							Doc["PositionY"].SetInt(currentY);
+
+							// ë‹¤ì‹œ JSON ìœ¼ë¡œ ì¡°ë¦½
+							rapidjson::StringBuffer StreamBuffer;
+							rapidjson::Writer<rapidjson::StringBuffer> Writer(StreamBuffer);
+							Doc.Accept(Writer);
+
+							// ì „ì†¡ìš© ë²„í¼ì— ìƒˆë¡œ ë§Œë“  ë¬¸ìì—´ ë³µì‚¬
+							memset(Buffer, 0, sizeof(Buffer));
+							memcpy(Buffer, StreamBuffer.GetString(), StreamBuffer.GetSize());
+							PacketSize = (unsigned short)StreamBuffer.GetSize();
+						}
+						// ì±„íŒ… íŒ¨í‚·
+						else if (Doc.HasMember("Message"))
+						{
+							SOCKADDR_IN ClientSockAddr;
+							memset(&ClientSockAddr, 0, sizeof(ClientSockAddr));
+							int ClientSockLength = sizeof(ClientSockAddr);
+
+							getpeername(CurrentSocket, (SOCKADDR*)&ClientSockAddr, &ClientSockLength);
+
+							cout << "[client chat] (" << inet_ntoa(ClientSockAddr.sin_addr);
+							cout << ")" << Buffer << " send" << endl;
+						}
+
+
+						// ëª¨ë“  ì ‘ì†í•œ ìœ ì €í•œí…Œ ì „ë‹¬
 						for (int j = 0; j < (int)ReadSockets.fd_count; ++j)
 						{
-							// ÀÚ±â²¨´Â ±×³É Âï°í ¾È ¹ŞÀ¸¸é ¾ÈµÅ¿ä
-							// Å¬¶óÀÌ¾ğÆ®¿¡¼­´Â Ã³¸® ¾ÈÇÔ.
+							// ìê¸°êº¼ëŠ” ê·¸ëƒ¥ ì°ê³  ì•ˆ ë°›ìœ¼ë©´ ì•ˆë¼ìš”
+							// í´ë¼ì´ì–¸íŠ¸ì—ì„œëŠ” ì²˜ë¦¬ ì•ˆí•¨.
 							if (ReadSockets.fd_array[j] != ListenSocket)
 							{
 								PacketSize = (unsigned short)strlen(Buffer);

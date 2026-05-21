@@ -30,7 +30,10 @@
     <ClInclude Include="NetUtil.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="PlayerPacket.h">
+    <ClInclude Include="PlayerPositionPacket.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="PlayerDirectionPacket.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
@@ -50,7 +53,10 @@
     <ClCompile Include="NetUtil.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="PlayerPacket.cpp">
+    <ClCompile Include="PlayerPositionPacket.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="PlayerDirectionPacket.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

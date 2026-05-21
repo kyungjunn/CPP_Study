@@ -1,12 +1,15 @@
 ﻿#define _WINSOCK_DEPRECATED_NO_WARNINGS
 
 #include "ChatPacket.h"
+#include "PlayerPositionPacket.h"
+#include "PlayerDirectionPacket.h"
 #include "NetUtil.h"
 
 #include <WinSock2.h>
 #include <Windows.h>
 #include <iostream>
 #include <process.h>
+#include <conio.h>
 
 #pragma comment(lib, "ws2_32")
 #pragma comment(lib, "NetCommon")
@@ -51,13 +54,55 @@ unsigned WINAPI RecvThread(void* Argument)
 			break;
 		}
 
-		ChatPacket Data;
-		Data.Parse(RecvBuffer);
+		rapidjson::Document Doc;
+		Doc.Parse(RecvBuffer);
 
-		cout << Data.UserID << " : " << Data.Message << " " << Data.Gold << endl;
+		if (Doc.HasMember("PositionX"))
+		{
+			PlayerPositionPacket PositionData;
+			PositionData.Parse(RecvBuffer);
+
+			cout << "[위치]" << PositionData.UserID << " : " << PositionData.PositionX << ", " << PositionData.PositionY << endl;
+		}
+		else if (Doc.HasMember("Message"))
+		{
+			ChatPacket Data;
+			Data.Parse(RecvBuffer);
+
+			cout << "[채팅]" << Data.UserID << " : " << Data.Message << " " << Data.Gold << endl;
+		}
 	}
 
 	return 0;
+}
+
+void SetPositionPacket(SOCKET ServerSocket, int InX, int InY, char InKey)
+{
+
+	// 플레이어 위치 패킷
+	PlayerPositionPacket PositionData;
+	PositionData.UserID = "Player1";
+	PositionData.PositionX = InX;
+	PositionData.PositionY = InY;
+	PositionData.InputKey = (int)InKey;
+
+	std::string JSONString = PositionData.ToString();
+	unsigned short PacketSize = (unsigned short)JSONString.length();
+	PacketSize = htons(PacketSize);
+
+	//header
+	int SentBytes = SendAll(ServerSocket, (char*)&PacketSize, 2);
+	if (SentBytes <= 0)
+	{
+		cout << "header send fail." << endl;
+	}
+
+	//Data
+	SentBytes = SendAll(ServerSocket, JSONString.c_str(), ntohs(PacketSize));
+	if (SentBytes <= 0)
+	{
+		cout << "data send fail." << endl;
+	}
 }
 
 unsigned WINAPI SendThread(void* Argument)
@@ -66,35 +111,48 @@ unsigned WINAPI SendThread(void* Argument)
 	SOCKET ServerSocket = *(SOCKET*)Argument;
 
 
+	int PlayerX = 10;
+	int PlayerY = 10;
 
 	while (IsSendThreadRunning)
 	{
-		cin.getline(SendBuffer, sizeof(SendBuffer));
+		char Keycode = _getch();
 
-		ChatPacket Data;
-		Data.UserID = "NULLPTR";
-		Data.Message = SendBuffer;
-		Data.Gold = 1000;
-		std::string JSONString = Data.ToString();
-
-
-		unsigned short PacketSize = (unsigned short)JSONString.length();
-		PacketSize = htons(PacketSize);
-
-		//header
-		int SentBytes = SendAll(ServerSocket, (char*)&PacketSize, 2);
-		if (SentBytes <= 0)
+		if (Keycode == 'w' || Keycode == 'a' || Keycode == 's' || Keycode == 'd')
 		{
-			cout << "header send fail." << endl;
-			break;
+			SetPositionPacket(ServerSocket, PlayerX, PlayerY, Keycode);
 		}
-
-		//Data
-		SentBytes = SendAll(ServerSocket, JSONString.c_str(), ntohs(PacketSize));
-		if (SentBytes <= 0)
+		else if (Keycode == 't')
 		{
-			cout << "data send fail." << endl;
-			break;
+			cin.getline(SendBuffer, sizeof(SendBuffer));
+			std::string InputString(SendBuffer);
+
+			// 채팅 패킷
+			ChatPacket Data;
+			Data.UserID = "NULLPTR";
+			Data.Message = SendBuffer;
+			Data.Gold = 1000;
+			std::string JSONString = Data.ToString();
+
+
+			unsigned short PacketSize = (unsigned short)JSONString.length();
+			PacketSize = htons(PacketSize);
+
+			//header
+			int SentBytes = SendAll(ServerSocket, (char*)&PacketSize, 2);
+			if (SentBytes <= 0)
+			{
+				cout << "header send fail." << endl;
+				break;
+			}
+
+			//Data
+			SentBytes = SendAll(ServerSocket, JSONString.c_str(), ntohs(PacketSize));
+			if (SentBytes <= 0)
+			{
+				cout << "data send fail." << endl;
+				break;
+			}
 		}
 	}
 
