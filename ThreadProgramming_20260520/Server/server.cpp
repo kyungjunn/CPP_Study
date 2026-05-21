@@ -126,7 +126,7 @@ int main()
 							int currentX = PlayerPositions[CurrentSocket].first;
 							int currentY = PlayerPositions[CurrentSocket].second;
 
-							// 클라이언트가 보낸 UserID 문자열을 임시 저장
+							// 클라이언트가 보낸 UserID 
 							string userId = Doc["UserID"].GetString();
 
 							if (Doc.HasMember("InputKey"))
@@ -147,7 +147,7 @@ int main()
 							Doc["PositionX"].SetInt(currentX);
 							Doc["PositionY"].SetInt(currentY);
 
-							// 다시 JSON 으로 조립
+							// JSON 으로 변환
 							rapidjson::StringBuffer StreamBuffer;
 							rapidjson::Writer<rapidjson::StringBuffer> Writer(StreamBuffer);
 							Doc.Accept(Writer);
@@ -155,6 +155,8 @@ int main()
 							// 전송용 버퍼에 새로 만든 문자열 복사
 							memset(Buffer, 0, sizeof(Buffer));
 							memcpy(Buffer, StreamBuffer.GetString(), StreamBuffer.GetSize());
+
+							// 바뀐 패킷 사이즈 재설정
 							PacketSize = (unsigned short)StreamBuffer.GetSize();
 						}
 						// 채팅 패킷

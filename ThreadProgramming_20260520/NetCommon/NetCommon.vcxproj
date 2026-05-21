@@ -130,7 +130,6 @@
     <ClInclude Include="NetUtil.h" />
     <ClInclude Include="Packet.h" />
     <ClInclude Include="pch.h" />
-    <ClInclude Include="PlayerDirectionPacket.h" />
     <ClInclude Include="PlayerPositionPacket.h" />
   </ItemGroup>
   <ItemGroup>
@@ -141,7 +140,6 @@
     <ClCompile Include="pch.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Create</PrecompiledHeader>
     </ClCompile>
-    <ClCompile Include="PlayerDirectionPacket.cpp" />
     <ClCompile Include="PlayerPositionPacket.cpp" />
   </ItemGroup>
   <ItemGroup>
