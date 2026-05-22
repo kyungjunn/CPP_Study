@@ -10,9 +10,7 @@
 #include <process.h>
 #include <conio.h>
 
-SessionManager MySessionManager;
 
-SOCKET MyClientID;
 
 
 #pragma comment(lib, "ws2_32")
@@ -27,34 +25,63 @@ char RecvBuffer[1024] = { 0, };
 bool IsRecvThreadRunning = true;
 bool IsSendThreadRunning = true;
 
+SessionManager MySessionManager;
+SOCKET MyClientID;
+
 void ProcessPacket(SOCKET ProcessSocket, const char* InBuffer, const Header& InHeader)
 {
 	switch ((EPacketType)InHeader.PacketType)
 	{
 	case EPacketType::S2C_Login:
-		{
-			S2C_Login LoginPacket;
-			LoginPacket.Parse(InBuffer);
-			cout << LoginPacket.ToString() << endl;
-			MyClientID = LoginPacket.ClientSocketID;
-		}
-		break;
-	case EPacketType::S2C_Spawn:
-		{
-			S2C_Spawn SpawnData;
-			SpawnData.Parse(InBuffer);
-			cout << SpawnData.ToString();
-
-			Session InSession;
-			InSession.ClientSocket = SpawnData.ClientSocket;
-			InSession.Shape = SpawnData.Shape;
-			InSession.X = SpawnData.X;
-			InSession.Y = SpawnData.Y;
-
-			MySessionManager.Add(InSession);
-		}
-		break;
+	{
+		S2C_Login LoginPacket;
+		LoginPacket.Parse(InBuffer);
+		cout << LoginPacket.ToString() << endl;
+		MyClientID = LoginPacket.ClientSocketID;
 	}
+	break;
+	case EPacketType::S2C_Spawn:
+	{
+		S2C_Spawn SpawnData;
+		SpawnData.Parse(InBuffer);
+		cout << SpawnData.ToString() << endl;
+
+		Session InSession;
+		InSession.ClientSocket = SpawnData.ClientSocket;
+		InSession.Shape = SpawnData.Shape;
+		InSession.X = SpawnData.X;
+		InSession.Y = SpawnData.Y;
+
+		MySessionManager.Add(InSession);
+	}
+	break;
+	case EPacketType::S2C_Move:
+	{
+		S2C_Move MoveData;
+		MoveData.Parse(InBuffer);
+		Session* FindSession = MySessionManager.GetSession(MoveData.ClientSocket);
+		FindSession->X = MoveData.X;
+		FindSession->Y = MoveData.Y;
+
+		std::cout << MoveData.ToString() << endl;
+	}
+	break;
+	case EPacketType::S2C_Destroy:
+	{
+		S2C_Destroy DestroyPacket;
+		DestroyPacket.Parse(InBuffer);
+
+		Session* FindSession = MySessionManager.GetSession(DestroyPacket.ClientSocket);
+
+		std::cout << "Quit : " << FindSession->ClientSocket << endl;
+
+		MySessionManager.Delete(*FindSession);
+
+	}
+	break;
+	}
+
+
 }
 
 unsigned WINAPI RecvThread(void* Argument)
@@ -101,25 +128,27 @@ unsigned WINAPI SendThread(void* Argument)
 	{
 		int KeyCode = _getch();
 
-		if (!(KeyCode == 'W' ||
-			KeyCode == 'w' ||
-			KeyCode == 'S' ||
-			KeyCode == 's' ||
-			KeyCode == 'A' ||
+		if (!(KeyCode == 'w' ||
+			KeyCode == 'W' ||
 			KeyCode == 'a' ||
-			KeyCode == 'D' ||
-			KeyCode == 'd'))
+			KeyCode == 'A' ||
+			KeyCode == 's' ||
+			KeyCode == 'S' ||
+			KeyCode == 'd' ||
+			KeyCode == 'D'))
 		{
 			continue;
 		}
+
 
 		C2S_Move MoveData;
 		MoveData.ClientSocket = MyClientID;
 		MoveData.Direction = KeyCode;
 
+
 		//header
 		Header DataHeader;
-		DataHeader.MakeHeader((int)(MoveData.ToString().length()), EPacketType::S2C_Login);
+		DataHeader.MakeHeader((int)(MoveData.ToString().length()), EPacketType::C2S_Move);
 		int SentBytes = SendAll(ServerSocket, (char*)&DataHeader, HeaderSize);
 		if (SentBytes <= 0)
 		{
@@ -132,32 +161,7 @@ unsigned WINAPI SendThread(void* Argument)
 		{
 			cout << "Data send fail." << endl;
 		}
-		//cin.getline(SendBuffer, sizeof(SendBuffer));
 
-		//ChatPacket Data;
-		//Data.UserID = "junios";
-		//Data.Message = SendBuffer;
-		//Data.Gold = 1000;
-		//std::string JSONString = Data.ToString();
-
-		//unsigned short PacketSize = (unsigned short)JSONString.length();
-		//PacketSize = htons(PacketSize);
-
-		////header
-		//int SentBytes = SendAll(ServerSocket, (char*)&PacketSize, 2);
-		//if (SentBytes <= 0)
-		//{
-		//	cout << "header send fail." << endl;
-		//	break;
-		//}
-
-		////Data
-		//SentBytes = SendAll(ServerSocket, JSONString.c_str(), ntohs(PacketSize));
-		//if (SentBytes <= 0)
-		//{
-		//	cout << "data send fail." << endl;
-		//	break;
-		//}
 
 	}
 
@@ -191,7 +195,7 @@ int main()
 	Header LoginHeader;
 	LoginHeader.MakeHeader(static_cast<unsigned short>(LoginData.ToString().length()), EPacketType::C2S_Login);
 
-	//Login 요청
+	//Login ��û
 	if (SendAll(ServerSocket, (char*)&LoginHeader, HeaderSize) <= 0)
 	{
 		cout << "login header Error" << endl;
@@ -217,6 +221,8 @@ int main()
 	WaitForMultipleObjects(2, ThreadHandles, FALSE, INFINITE);
 
 	closesocket(ServerSocket);
+
+	cout << "End Thread" << endl;
 
 	//TerminateThread(ThreadHandles[0], 0);
 	//TerminateThread(ThreadHandles[1], 0);

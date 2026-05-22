@@ -17,6 +17,51 @@ char Buffer[1024] = { 0, };
 
 SessionManager MySessionManager;
 
+void DisconnectSocket(SOCKET DisconnectedSocket, fd_set* Sockets)
+{
+	SOCKET ClosedSocket = DisconnectedSocket;
+
+	SOCKADDR_IN ClosedSockAddr;
+	memset(&ClosedSockAddr, 0, sizeof(ClosedSockAddr));
+	int ClosedSockAddrLength = sizeof(ClosedSockAddr);
+
+	getpeername(ClosedSocket, (SOCKADDR*)&ClosedSockAddr, &ClosedSockAddrLength);
+
+	cout << "disconnect : " << inet_ntoa(ClosedSockAddr.sin_addr) << endl;
+
+	FD_CLR(ClosedSocket, &Sockets);
+	closesocket(ClosedSocket);
+
+	S2C_Destroy DestroyPacket;
+
+	// Dangling Pointer
+	Session* FindSession = MySessionManager.GetSession(ClosedSocket);
+	DestroyPacket.ClientSocket = FindSession->ClientSocket;
+
+	MySessionManager.Delete(*FindSession);
+
+	Header DestroyHeader;
+	DestroyHeader.MakeHeader((int)DestroyPacket.ToString().length(), EPacketType::S2C_Destroy);
+
+	// 모든 유저한테 이동 패킷 보내줌
+	for (auto Receiver : MySessionManager.SessionList)
+	{
+		// Header
+		int SentBytes = SendAll(Receiver.ClientSocket, (char*)&DestroyHeader, HeaderSize);
+		if (SentBytes <= 0)
+		{
+			std::cout << "Move Header Error" << endl;
+		}
+
+		// Data
+		SentBytes = SendAll(Receiver.ClientSocket, DestroyPacket.ToString().c_str(), (int)DestroyPacket.ToString().length());
+		if (SentBytes <= 0)
+		{
+			std::cout << "Move Data Error" << endl;
+		}
+	}
+}
+
 void ProcessPacket(SOCKET ProcessSocket, const char* InBuffer, const Header& InHeader)
 {
 	switch ((EPacketType)InHeader.PacketType)
@@ -91,7 +136,52 @@ void ProcessPacket(SOCKET ProcessSocket, const char* InBuffer, const Header& InH
 
 		case EPacketType::C2S_Move:
 		{
-			
+			C2S_Move MovePacket;
+			MovePacket.Parse(InBuffer);
+			Session* FindSession = MySessionManager.GetSession(MovePacket.ClientSocket);;
+
+			switch (MovePacket.Direction)
+			{
+			case 'W':
+			case 'w': 
+				FindSession->Y--;
+			case 'S':
+			case 's': 
+				FindSession->Y++;
+			case 'A':
+			case 'a': 
+				FindSession->X--;
+			case 'D':
+			case 'd': 
+				FindSession->X++;
+				break;
+			}
+
+			S2C_Move MoveData;
+			MoveData.ClientSocket = FindSession->ClientSocket;
+			MoveData.X = FindSession->X;
+			MoveData.Y = FindSession->Y;
+
+			Header MoveHeader;
+			MoveHeader.MakeHeader((int)MoveData.ToString().length(), EPacketType::S2C_Move);
+
+			// 모든 유저한테 이동 패킷 보내줌
+			for (auto Receiver : MySessionManager.SessionList)
+			{
+				// Header
+				int SentBytes = SendAll(Receiver.ClientSocket, (char*)&MoveHeader, HeaderSize);
+				if (SentBytes <= 0)
+				{
+					cout << "Move Header Error" << endl;
+				}
+
+				// Data
+				SentBytes = SendAll(Receiver.ClientSocket, MoveData.ToString().c_str(), (int)MoveData.ToString().length());
+				if (SentBytes <= 0)
+				{
+					cout << "Move Data Error" << endl;
+				}
+			}
 		}
 		break;
 	}
