@@ -10,6 +10,9 @@ struct Session
 	int X;
 	int Y;
 	char Shape = ' '; // 사람 모양
+	int R;
+	int G;
+	int B;
 
 	bool operator==(const Session& RHS)
 	{

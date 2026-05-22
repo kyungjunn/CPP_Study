@@ -79,6 +79,9 @@ void ProcessPacket(SOCKET ProcessSocket, const char* InBuffer, const Header& InH
 			InSession.X = rand() % 24 + 1; // 1 ~ 25;
 			InSession.Y = rand() % 24 + 1; // 1 ~ 25;
 			InSession.Shape = 65 + (rand() % 26);
+			InSession.R = rand() % 255;
+			InSession.G = rand() % 255;
+			InSession.B = rand() % 255;
 
 			MySessionManager.Add(InSession);
 			//접속 한 아이한테 확인 패킷(S2C_Login)
@@ -111,6 +114,9 @@ void ProcessPacket(SOCKET ProcessSocket, const char* InBuffer, const Header& InH
 				SpawnData.Shape = Item.Shape;
 				SpawnData.X = Item.X;
 				SpawnData.Y = Item.Y;
+				SpawnData.R = Item.R;
+				SpawnData.G = Item.G;
+				SpawnData.B = Item.B;
 
 				Header SpawnHeader;
 				SpawnHeader.MakeHeader((int)SpawnData.ToString().length(), EPacketType::S2C_Spawn);
