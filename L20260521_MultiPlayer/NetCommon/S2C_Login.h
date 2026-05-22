@@ -3,6 +3,8 @@
 class S2C_Login : public IPacket
 {
 public:
+
+	SOCKET ClientSocketID;
 	std::string Message;
 
 	// Inherited via IPacket

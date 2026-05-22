@@ -8,8 +8,11 @@
 #include <Windows.h>
 #include <iostream>
 #include <process.h>
+#include <conio.h>
 
+SessionManager MySessionManager;
 
+SOCKET MyClientID;
 
 
 #pragma comment(lib, "ws2_32")
@@ -33,6 +36,7 @@ void ProcessPacket(SOCKET ProcessSocket, const char* InBuffer, const Header& InH
 			S2C_Login LoginPacket;
 			LoginPacket.Parse(InBuffer);
 			cout << LoginPacket.ToString() << endl;
+			MyClientID = LoginPacket.ClientSocketID;
 		}
 		break;
 	case EPacketType::S2C_Spawn:
@@ -40,6 +44,14 @@ void ProcessPacket(SOCKET ProcessSocket, const char* InBuffer, const Header& InH
 			S2C_Spawn SpawnData;
 			SpawnData.Parse(InBuffer);
 			cout << SpawnData.ToString();
+
+			Session InSession;
+			InSession.ClientSocket = SpawnData.ClientSocket;
+			InSession.Shape = SpawnData.Shape;
+			InSession.X = SpawnData.X;
+			InSession.Y = SpawnData.Y;
+
+			MySessionManager.Add(InSession);
 		}
 		break;
 	}
@@ -87,7 +99,40 @@ unsigned WINAPI SendThread(void* Argument)
 
 	while (IsSendThreadRunning)
 	{
-		cin.getline(SendBuffer, sizeof(SendBuffer));
+		int KeyCode = _getch();
+
+		if (!(KeyCode == 'W' ||
+			KeyCode == 'w' ||
+			KeyCode == 'S' ||
+			KeyCode == 's' ||
+			KeyCode == 'A' ||
+			KeyCode == 'a' ||
+			KeyCode == 'D' ||
+			KeyCode == 'd'))
+		{
+			continue;
+		}
+
+		C2S_Move MoveData;
+		MoveData.ClientSocket = MyClientID;
+		MoveData.Direction = KeyCode;
+
+		//header
+		Header DataHeader;
+		DataHeader.MakeHeader((int)(MoveData.ToString().length()), EPacketType::S2C_Login);
+		int SentBytes = SendAll(ServerSocket, (char*)&DataHeader, HeaderSize);
+		if (SentBytes <= 0)
+		{
+			cout << "header send fail." << endl;
+		}
+
+		//Data
+		SentBytes = SendAll(ServerSocket, MoveData.ToString().c_str(), (int)(MoveData.ToString().length()));
+		if (SentBytes <= 0)
+		{
+			cout << "Data send fail." << endl;
+		}
+		//cin.getline(SendBuffer, sizeof(SendBuffer));
 
 		//ChatPacket Data;
 		//Data.UserID = "junios";
@@ -132,7 +177,7 @@ int main()
 	SOCKADDR_IN ServerSockAddr;
 	memset(&ServerSockAddr, 0, sizeof(ServerSockAddr));
 	ServerSockAddr.sin_family = AF_INET;
-	ServerSockAddr.sin_addr.s_addr = inet_addr("192.168.0.95");
+	ServerSockAddr.sin_addr.s_addr = inet_addr("192.168.0.97");
 	ServerSockAddr.sin_port = htons(35000);
 
 	connect(ServerSocket, (SOCKADDR*)&ServerSockAddr, sizeof(ServerSockAddr));
