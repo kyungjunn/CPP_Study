@@ -29,13 +29,12 @@ bool IsSendThreadRunning = true;
 SessionManager MySessionManager;
 SOCKET MyClientID;
 
-// 윈도우 창 초기화
+// SDL
 SDL_Window* MyWindow = nullptr;
-
-// 윈도우 렌더러 초기화
 SDL_Renderer* MyRenderer = nullptr;
+SDL_Event MyEvent;
 
-// 키 입력 알림 이벤트 헨들
+// 키 입력 이벤트
 HANDLE hSendEvent = nullptr;      
 
 // 공유 KeyCode
@@ -181,14 +180,15 @@ unsigned WINAPI SendThread(void* Argument)
 		//{
 		//	continue;
 		//}
+		
+		
 		// 입력 신호 전까지 대기
 		WaitForSingleObject(hSendEvent, INFINITE);
-
 		if (!IsSendThreadRunning) break;
 
 		C2S_Move MoveData;
 		MoveData.ClientSocket = MyClientID;
-		MoveData.Direction = SharedKeyCode;
+		MoveData.Direction = SharedKeyCode; 
 
 
 		//header
@@ -219,13 +219,11 @@ int SDL_main(int argc, char* argv[])
 	// SDL 라이브러리 초기화
 	SDL_Init(SDL_INIT_EVERYTHING);
 
-	// 윈도우 창 생성
+	// Window, Renderer
 	MyWindow = SDL_CreateWindow("MyWindow", 100, 100, 1024, 720, SDL_WINDOW_SHOWN);
-
-	// 윈도우 렌더러 생성
 	MyRenderer = SDL_CreateRenderer(MyWindow, -1, 0);
 
-	// 동기화 이벤트 객체 생성 (자동 리셋 모드)
+	// 동기화 이벤트 객체 생성 (보안, 자동리셋, 초기, 이름)
 	hSendEvent = CreateEvent(NULL, FALSE, FALSE, NULL);
 
 	WSAData wsaData;
