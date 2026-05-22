@@ -1,7 +1,7 @@
 ﻿#define _WINSOCK_DEPRECATED_NO_WARNINGS
 
 
-#include "ChatPacket.h"
+#include "ChatPacket.h"										
 #include "NetUtil.h"
 
 #include <winsock2.h>
@@ -9,24 +9,64 @@
 #include <iostream>
 #include <process.h>
 #include <conio.h>
-
-
-
+#include "SDL.h"
 
 #pragma comment(lib, "ws2_32")
 #pragma comment(lib, "NetCommon")
-
+#pragma comment(lib, "SDL2main.lib")
+#pragma comment(lib, "SDL2.lib")
 
 using namespace std;
 
 char SendBuffer[1024] = { 0, };
 char RecvBuffer[1024] = { 0, };
 
+bool bIsRunning = true;
 bool IsRecvThreadRunning = true;
 bool IsSendThreadRunning = true;
 
+// ActorList
 SessionManager MySessionManager;
 SOCKET MyClientID;
+
+// 윈도우 창 초기화
+SDL_Window* MyWindow = nullptr;
+
+// 윈도우 렌더러 초기화
+SDL_Renderer* MyRenderer = nullptr;
+
+// 키 입력 알림 이벤트 헨들
+HANDLE hSendEvent = nullptr;      
+
+// 공유 KeyCode
+SDL_Keycode SharedKeyCode = 0;
+
+void Render(SDL_Renderer* InRenderer)
+{
+	system("cls");
+
+	// 지우기
+	SDL_SetRenderDrawColor(InRenderer, 255, 255, 255, 255);
+	SDL_RenderClear(InRenderer);
+
+	for (auto Player : MySessionManager.SessionList)
+	{
+		COORD Where;
+		Where.X = Player.X;
+		Where.Y = Player.Y;
+		SetConsoleCursorPosition(GetStdHandle(STD_OUTPUT_HANDLE), Where);
+
+		std::cout << (char)Player.Shape << endl;
+
+		// 사각형 그리기
+		int TileSize = 20;
+		SDL_SetRenderDrawColor(InRenderer, 255, 0, 0, 255);
+		SDL_Rect Square = { Player.X * TileSize, Player.Y * TileSize, TileSize, TileSize };
+		SDL_RenderFillRect(InRenderer, &Square);
+	}
+	// Cpu -> Gpu 보내기
+	SDL_RenderPresent(InRenderer);
+}
 
 void ProcessPacket(SOCKET ProcessSocket, const char* InBuffer, const Header& InHeader)
 {
@@ -36,7 +76,7 @@ void ProcessPacket(SOCKET ProcessSocket, const char* InBuffer, const Header& InH
 	{
 		S2C_Login LoginPacket;
 		LoginPacket.Parse(InBuffer);
-		cout << LoginPacket.ToString() << endl;
+		//cout << LoginPacket.ToString() << endl;
 		MyClientID = LoginPacket.ClientSocketID;
 	}
 	break;
@@ -44,7 +84,7 @@ void ProcessPacket(SOCKET ProcessSocket, const char* InBuffer, const Header& InH
 	{
 		S2C_Spawn SpawnData;
 		SpawnData.Parse(InBuffer);
-		cout << SpawnData.ToString() << endl;
+		std::cout << SpawnData.ToString() << endl;
 
 		Session InSession;
 		InSession.ClientSocket = SpawnData.ClientSocket;
@@ -53,6 +93,7 @@ void ProcessPacket(SOCKET ProcessSocket, const char* InBuffer, const Header& InH
 		InSession.Y = SpawnData.Y;
 
 		MySessionManager.Add(InSession);
+		//Render(MyRenderer);
 	}
 	break;
 	case EPacketType::S2C_Move:
@@ -63,7 +104,8 @@ void ProcessPacket(SOCKET ProcessSocket, const char* InBuffer, const Header& InH
 		FindSession->X = MoveData.X;
 		FindSession->Y = MoveData.Y;
 
-		std::cout << MoveData.ToString() << endl;
+		//std::cout << MoveData.ToString() << endl;
+		//Render(MyRenderer);
 	}
 	break;
 	case EPacketType::S2C_Destroy:
@@ -73,10 +115,11 @@ void ProcessPacket(SOCKET ProcessSocket, const char* InBuffer, const Header& InH
 
 		Session* FindSession = MySessionManager.GetSession(DestroyPacket.ClientSocket);
 
-		std::cout << "Quit : " << FindSession->ClientSocket << endl;
+		//std::cout << "Quit : " << FindSession->ClientSocket << endl;
 
 		MySessionManager.Delete(*FindSession);
 
+		//Render(MyRenderer);
 	}
 	break;
 	}
@@ -97,7 +140,7 @@ unsigned WINAPI RecvThread(void* Argument)
 		int RecvBytes = RecvAll(ServerSocket, (char*)&DataHeader, HeaderSize);
 		if (RecvBytes <= 0)
 		{
-			cout << "header recv fail " << endl;
+			std::cout << "header recv fail " << endl;
 			break;
 		}
 
@@ -108,14 +151,14 @@ unsigned WINAPI RecvThread(void* Argument)
 		RecvBytes = RecvAll(ServerSocket, RecvBuffer, DataHeader.PacketSize);
 		if (RecvBytes <= 0)
 		{
-			cout << "Data recv fail " << endl;
+			std::cout << "Data recv fail " << endl;
 			break;
 		}
 
 		ProcessPacket(ServerSocket, RecvBuffer, DataHeader);
 	}
 
-
+	bIsRunning = false;
 	return 0;
 }
 
@@ -126,24 +169,25 @@ unsigned WINAPI SendThread(void* Argument)
 
 	while (IsSendThreadRunning)
 	{
-		int KeyCode = _getch();
+		//int KeyCode = _getch();
+		//if (!(KeyCode == 'w' ||
+		//	KeyCode == 'W' ||
+		//	KeyCode == 'a' ||
+		//	KeyCode == 'A' ||
+		//	KeyCode == 's' ||
+		//	KeyCode == 'S' ||
+		//	KeyCode == 'd' ||
+		//	KeyCode == 'D'))
+		//{
+		//	continue;
+		//}
+		WaitForSingleObject(hSendEvent, INFINITE);
 
-		if (!(KeyCode == 'w' ||
-			KeyCode == 'W' ||
-			KeyCode == 'a' ||
-			KeyCode == 'A' ||
-			KeyCode == 's' ||
-			KeyCode == 'S' ||
-			KeyCode == 'd' ||
-			KeyCode == 'D'))
-		{
-			continue;
-		}
-
+		if (!IsSendThreadRunning) break;
 
 		C2S_Move MoveData;
 		MoveData.ClientSocket = MyClientID;
-		MoveData.Direction = KeyCode;
+		MoveData.Direction = SharedKeyCode;
 
 
 		//header
@@ -152,25 +196,36 @@ unsigned WINAPI SendThread(void* Argument)
 		int SentBytes = SendAll(ServerSocket, (char*)&DataHeader, HeaderSize);
 		if (SentBytes <= 0)
 		{
-			cout << "header send fail." << endl;
+			std::cout << "header send fail." << endl;
 		}
 
 		//Data
 		SentBytes = SendAll(ServerSocket, MoveData.ToString().c_str(), (int)(MoveData.ToString().length()));
 		if (SentBytes <= 0)
 		{
-			cout << "Data send fail." << endl;
+			std::cout << "Data send fail." << endl;
 		}
-
 
 	}
 
 	return 0;
 }
 
-int main()
+int SDL_main(int argc, char* argv[])
 {
-	cout << "client " << endl;
+	std::cout << "client " << endl;
+
+	// SDL 라이브러리 초기화
+	SDL_Init(SDL_INIT_EVERYTHING);
+
+	// 윈도우 창 생성
+	MyWindow = SDL_CreateWindow("MyWindow", 100, 100, 1024, 720, SDL_WINDOW_SHOWN);
+
+	// 윈도우 렌더러 생성
+	MyRenderer = SDL_CreateRenderer(MyWindow, -1, 0);
+
+	// 동기화 이벤트 객체 생성 (자동 리셋 모드)
+	hSendEvent = CreateEvent(NULL, FALSE, FALSE, NULL);
 
 	WSAData wsaData;
 
@@ -186,24 +241,24 @@ int main()
 
 	connect(ServerSocket, (SOCKADDR*)&ServerSockAddr, sizeof(ServerSockAddr));
 
-	cout << "client connect" << endl;
+	std::cout << "client connect" << endl;
 
 	C2S_Login LoginData;
-	LoginData.UserID = "junios";
-	LoginData.HashKey = "1as3f356dsd6gyhg";
+	LoginData.UserID = "kyungjun";
+	LoginData.HashKey = "1q2w3e4r5t";
 
 	Header LoginHeader;
 	LoginHeader.MakeHeader(static_cast<unsigned short>(LoginData.ToString().length()), EPacketType::C2S_Login);
 
-	//Login ��û
+	//Login 요청
 	if (SendAll(ServerSocket, (char*)&LoginHeader, HeaderSize) <= 0)
 	{
-		cout << "login header Error" << endl;
+		std::cout << "login header Error" << endl;
 	}
 
 	if (SendAll(ServerSocket, LoginData.ToString().c_str(), (int)LoginData.ToString().length()) <= 0)
 	{
-		cout << "login data Error" << endl;
+		std::cout << "login data Error" << endl;
 	}
 
 	HANDLE ThreadHandles[2] = { 0, };
@@ -216,13 +271,37 @@ int main()
 	//SuspendThread(ThreadHandles[0]);
 	//SuspendThread(ThreadHandles[1]);
 
+	while (bIsRunning)
+	{
+		SDL_Event MyEvent;
+		while (SDL_PollEvent(&MyEvent))
+		{
+			if (MyEvent.type == SDL_QUIT)
+			{
+				bIsRunning = false;
+			}
+			else if (MyEvent.type == SDL_KEYDOWN)
+			{
+				SDL_Keycode KeyCode = MyEvent.key.keysym.sym;
+				if (KeyCode == SDLK_w || KeyCode == SDLK_s || KeyCode == SDLK_a || KeyCode == SDLK_d)
+				{
+					// 대기 중인 SendThread를 깨움
+					SharedKeyCode = KeyCode;
+					SetEvent(hSendEvent);
+				}
+			}
+		}
+		
+		Render(MyRenderer);
+	}
+	
 
 	//blocking
 	WaitForMultipleObjects(2, ThreadHandles, FALSE, INFINITE);
 
 	closesocket(ServerSocket);
 
-	cout << "End Thread" << endl;
+	std::cout << "End Thread" << endl;
 
 	//TerminateThread(ThreadHandles[0], 0);
 	//TerminateThread(ThreadHandles[1], 0);
@@ -232,8 +311,14 @@ int main()
 
 	CloseHandle(ThreadHandles[0]);
 	CloseHandle(ThreadHandles[1]);
+	CloseHandle(hSendEvent);
 
 	WSACleanup();
+
+	// 지우기 
+	SDL_DestroyRenderer(MyRenderer);
+	SDL_DestroyWindow(MyWindow);
+	SDL_Quit();
 
 	return 0;
 }

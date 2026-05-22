@@ -29,7 +29,7 @@ void DisconnectSocket(SOCKET DisconnectedSocket, fd_set* Sockets)
 
 	cout << "disconnect : " << inet_ntoa(ClosedSockAddr.sin_addr) << endl;
 
-	FD_CLR(ClosedSocket, &Sockets);
+	FD_CLR(ClosedSocket, Sockets);
 	closesocket(ClosedSocket);
 
 	S2C_Destroy DestroyPacket;
@@ -145,12 +145,15 @@ void ProcessPacket(SOCKET ProcessSocket, const char* InBuffer, const Header& InH
 			case 'W':
 			case 'w': 
 				FindSession->Y--;
+				break;
 			case 'S':
 			case 's': 
 				FindSession->Y++;
+				break;
 			case 'A':
 			case 'a': 
 				FindSession->X--;
+				break;
 			case 'D':
 			case 'd': 
 				FindSession->X++;
@@ -192,6 +195,8 @@ void ProcessPacket(SOCKET ProcessSocket, const char* InBuffer, const Header& InH
 //blocking, synchrous, multiplexing(polling)
 int main()
 {
+	srand((unsigned int)time(nullptr));
+
 	cout << "server start" << endl;
 
 	WSAData wsaData;
