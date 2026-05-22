@@ -1,4 +1,4 @@
-#define _WINSOCK_DEPRECATED_NO_WARNINGS
+ï»¿#define _WINSOCK_DEPRECATED_NO_WARNINGS
 
 
 #include "ChatPacket.h"
@@ -24,6 +24,27 @@ char RecvBuffer[1024] = { 0, };
 bool IsRecvThreadRunning = true;
 bool IsSendThreadRunning = true;
 
+void ProcessPacket(SOCKET ProcessSocket, const char* InBuffer, const Header& InHeader)
+{
+	switch ((EPacketType)InHeader.PacketType)
+	{
+	case EPacketType::S2C_Login:
+		{
+			S2C_Login LoginPacket;
+			LoginPacket.Parse(InBuffer);
+			cout << LoginPacket.ToString() << endl;
+		}
+		break;
+	case EPacketType::S2C_Spawn:
+		{
+			S2C_Spawn SpawnData;
+			SpawnData.Parse(InBuffer);
+			cout << SpawnData.ToString();
+		}
+		break;
+	}
+}
+
 unsigned WINAPI RecvThread(void* Argument)
 {
 	SOCKET ServerSocket = *(SOCKET*)Argument;
@@ -33,29 +54,26 @@ unsigned WINAPI RecvThread(void* Argument)
 		unsigned short PacketSize = 0;
 
 		//header
-		int RecvBytes = recv(ServerSocket, (char*)&PacketSize, sizeof(PacketSize), MSG_WAITALL);
+		Header DataHeader;
+		int RecvBytes = RecvAll(ServerSocket, (char*)&DataHeader, HeaderSize);
 		if (RecvBytes <= 0)
 		{
-			cout << "recv fail " << endl;
+			cout << "header recv fail " << endl;
 			break;
 		}
 
-		PacketSize = ntohs(PacketSize);
+		DataHeader.NetworkToHost();
 
 		memset(RecvBuffer, 0, sizeof(RecvBuffer));
 		//data JSON
-		RecvBytes = recv(ServerSocket, RecvBuffer, PacketSize, MSG_WAITALL);
+		RecvBytes = RecvAll(ServerSocket, RecvBuffer, DataHeader.PacketSize);
 		if (RecvBytes <= 0)
 		{
-			cout << "recv fail " << endl;
+			cout << "Data recv fail " << endl;
 			break;
 		}
 
-		ChatPacket Data;
-
-		Data.Parse(RecvBuffer);
-
-		cout << Data.UserID << " : " << Data.Message << " " << Data.Gold << endl;
+		ProcessPacket(ServerSocket, RecvBuffer, DataHeader);
 	}
 
 
@@ -64,37 +82,37 @@ unsigned WINAPI RecvThread(void* Argument)
 
 unsigned WINAPI SendThread(void* Argument)
 {
-	//Ã¥ÀÓÀº »ç¿ëÇÏ´Â ³ðÀÌ Áø´Ù.
+	//ì±…ìž„ì€ ì‚¬ìš©í•˜ëŠ” ë†ˆì´ ì§„ë‹¤.
 	SOCKET ServerSocket = *(SOCKET*)Argument;
 
 	while (IsSendThreadRunning)
 	{
 		cin.getline(SendBuffer, sizeof(SendBuffer));
 
-		ChatPacket Data;
-		Data.UserID = "junios";
-		Data.Message = SendBuffer;
-		Data.Gold = 1000;
-		std::string JSONString = Data.ToString();
+		//ChatPacket Data;
+		//Data.UserID = "junios";
+		//Data.Message = SendBuffer;
+		//Data.Gold = 1000;
+		//std::string JSONString = Data.ToString();
 
-		unsigned short PacketSize = (unsigned short)JSONString.length();
-		PacketSize = htons(PacketSize);
+		//unsigned short PacketSize = (unsigned short)JSONString.length();
+		//PacketSize = htons(PacketSize);
 
-		//header
-		int SentBytes = SendAll(ServerSocket, (char*)&PacketSize, 2);
-		if (SentBytes <= 0)
-		{
-			cout << "header send fail." << endl;
-			break;
-		}
+		////header
+		//int SentBytes = SendAll(ServerSocket, (char*)&PacketSize, 2);
+		//if (SentBytes <= 0)
+		//{
+		//	cout << "header send fail." << endl;
+		//	break;
+		//}
 
-		//Data
-		SentBytes = SendAll(ServerSocket, JSONString.c_str(), ntohs(PacketSize));
-		if (SentBytes <= 0)
-		{
-			cout << "data send fail." << endl;
-			break;
-		}
+		////Data
+		//SentBytes = SendAll(ServerSocket, JSONString.c_str(), ntohs(PacketSize));
+		//if (SentBytes <= 0)
+		//{
+		//	cout << "data send fail." << endl;
+		//	break;
+		//}
 
 	}
 
@@ -103,8 +121,7 @@ unsigned WINAPI SendThread(void* Argument)
 
 int main()
 {
-	cout << "client" << endl;
-
+	cout << "client " << endl;
 
 	WSAData wsaData;
 
@@ -123,18 +140,22 @@ int main()
 	cout << "client connect" << endl;
 
 	C2S_Login LoginData;
-	LoginData.UserID = "kyungjun";
-	LoginData.HashKey = "1q2w3e4e4r5r";
+	LoginData.UserID = "junios";
+	LoginData.HashKey = "1as3f356dsd6gyhg";
 
 	Header LoginHeader;
 	LoginHeader.MakeHeader(static_cast<unsigned short>(LoginData.ToString().length()), EPacketType::C2S_Login);
 
-	// Login ¿äÃ»
-	SendAll(ServerSocket, (char*)&LoginHeader, HeaderSize);
-	SendAll(ServerSocket, LoginData.ToString().c_str(), (int)LoginData.ToString().length());
+	//Login ìš”ì²­
+	if (SendAll(ServerSocket, (char*)&LoginHeader, HeaderSize) <= 0)
+	{
+		cout << "login header Error" << endl;
+	}
 
-
-
+	if (SendAll(ServerSocket, LoginData.ToString().c_str(), (int)LoginData.ToString().length()) <= 0)
+	{
+		cout << "login data Error" << endl;
+	}
 
 	HANDLE ThreadHandles[2] = { 0, };
 

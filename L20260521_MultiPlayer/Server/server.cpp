@@ -1,9 +1,11 @@
-#define _WINSOCK_DEPRECATED_NO_WARNINGS
+ï»¿#define _WINSOCK_DEPRECATED_NO_WARNINGS
 
 #include "NetUtil.h"
 
 #include <winsock2.h>
 #include <iostream>
+
+#include "SessionManager.h"
 
 
 #pragma comment(lib, "ws2_32")
@@ -13,6 +15,8 @@ using namespace std;
 
 char Buffer[1024] = { 0, };
 
+SessionManager MySessionManager;
+
 void ProcessPacket(SOCKET ProcessSocket, const char* InBuffer, const Header& InHeader)
 {
 	switch ((EPacketType)InHeader.PacketType)
@@ -20,26 +24,73 @@ void ProcessPacket(SOCKET ProcessSocket, const char* InBuffer, const Header& InH
 	case EPacketType::C2S_Login:
 		C2S_Login LoginPacket;
 		LoginPacket.Parse(InBuffer);
-		// Á¢¼ÓÇÑ À¯Àú Á¤º¸ ¾÷µ¥ÀÌÆ®(Session)
-		// Á¢¼ÓÇÑ Å¬¶óÇÑÅ× È®ÀÎ ÆĞÅ¶ º¸³»±â(S2C_Login)
+		//ì ‘ì† í•œ ìœ ì €ê°€ ì •í™•í•œ ì‚¬ëŒì¸ì§€ í™•ì¸
+		// AGameModeBase::PreLogin();
+		//ì ‘ì† í•œ ìœ ì € ì •ë³´ ì—…ë°ì´íŠ¸(Session)
+		Session InSession;
+		InSession.ClientSocket = ProcessSocket;
+		InSession.UserID = LoginPacket.UserID;
+		InSession.X = rand() % 24 + 1; // 1 ~ 25;
+		InSession.Y = rand() % 24 + 1; // 1 ~ 25;
+		InSession.Shape = 65 + (rand() % 26);
+
+		MySessionManager.Add(InSession);
+		//ì ‘ì† í•œ ì•„ì´í•œí…Œ í™•ì¸ íŒ¨í‚·(S2C_Login)
+
+		S2C_Login Data;
+		Data.Message = "Welcome.";
+
+		//header
+		Header DataHeader;
+		DataHeader.MakeHeader((int)(Data.ToString().length()), EPacketType::S2C_Login);
+		int SentBytes = SendAll(ProcessSocket, (char*)&DataHeader, HeaderSize);
+		if (SentBytes <= 0)
+		{
+			cout << "header send fail." << endl;
+		}
+
+		//Data
+		SentBytes = SendAll(ProcessSocket, Data.ToString().c_str(), (int)(Data.ToString().length()));
+		if (SentBytes <= 0)
+		{
+			cout << "Data send fail." << endl;
+		}
+
+		// ì ‘ì†í•œ ëª¨ë“  ìœ ì €í•œí…Œ í˜„ì¬ ëª¨ë“  ìœ ì €ì˜ ì •ë³´ë¥¼ ë³´ë‚´ì¤€ë‹¤.
+		for (auto Item : MySessionManager.SessionList)
+		{
+			S2C_Spawn SpawnData;
+			SpawnData.ClientSocket = Item.ClientSocket;
+			SpawnData.Shape = Item.Shape;
+			SpawnData.X = Item.X;
+			SpawnData.Y = Item.Y;
+
+			Header SpawnHeader;
+			SpawnHeader.MakeHeader((int)SpawnData.ToString().length(), EPacketType::S2C_Spawn);
+			for (auto Receiver : MySessionManager.SessionList)
+			{
+				//header
+				int SentBytes = SendAll(Receiver.ClientSocket, (char*)&SpawnHeader, HeaderSize);
+				if (SentBytes <= 0)
+				{
+					cout << "header send fail." << endl;
+				}
+
+				//Data
+				SentBytes = SendAll(Receiver.ClientSocket, SpawnData.ToString().c_str(), (int)(SpawnData.ToString().length()));
+				if (SentBytes <= 0)
+				{
+					cout << "Data send fail." << endl;
+				}
+			}
+		}
+
 		break;
 	}
-	//header
-	//int SentBytes = SendAll(ReadSockets.fd_array[j], (char*)&PacketSize, 2);
-	//if (SentBytes <= 0)
-	//{
-	//	cout << "header send fail." << endl;
-	//	DisconnectSocket(ReadSockets.fd_array[j], &ReadSockets);
-	//}
 
-	////Data
-	//SentBytes = SendAll(ReadSockets.fd_array[j], Buffer, ntohs(PacketSize));
-	//if (SentBytes <= 0)
-	//{
-	//	cout << "Data send fail." << endl;
-	//	DisconnectSocket(ReadSockets.fd_array[j], &ReadSockets);
-	//}
+
 }
+
 //blocking, synchrous, multiplexing(polling)
 int main()
 {
@@ -57,7 +108,7 @@ int main()
 	ListenSockAddr.sin_addr.s_addr = INADDR_ANY;
 	ListenSockAddr.sin_port = htons(35000);
 
-	//already use port ÀÌ¹Ì Æ÷Æ® »ç¿ëÁß
+	//already use port ì´ë¯¸ í¬íŠ¸ ì‚¬ìš©ì¤‘
 	::bind(ListenSocket, (SOCKADDR*)&ListenSockAddr, sizeof(ListenSockAddr));
 
 	listen(ListenSocket, SOMAXCONN);
@@ -79,17 +130,17 @@ int main()
 	{
 		CopyReadSockets = ReadSockets;
 
-		//0.5ÃÊ¾¿ blocking
+		//0.5ì”© blocking
 		int ChangeCount = select(0, &CopyReadSockets, 0, 0, &TimeOut);
 
 		if (ChangeCount <= 0)
 		{
 			//Server Work
-			//0.5ÃÊÇÑ¹ø ¼­¹ö ÀÛ¾÷À» ÇÏ´Â°Å
+			//0.5ì´ˆí•œë²ˆ ì„œë²„ ì‘ì—…ì„ í•˜ëŠ”ê±°
 			continue;
 		}
 
-		//¸ó°¡ ÀÚ·á ÀÖ´Ù.
+		//ëª¬ê°€ ìë£Œ ìˆë‹¤
 		for (int i = 0; i < (int)ReadSockets.fd_count; ++i)
 		{
 			if (FD_ISSET(ReadSockets.fd_array[i], &CopyReadSockets))
@@ -135,11 +186,7 @@ int main()
 					}
 					else
 					{
-						if (ReadSockets.fd_array[i] != ListenSocket)
-						{
-							ProcessPacket(ReadSockets.fd_array[i], Buffer, DataHeader);
-						}
-
+						ProcessPacket(ReadSockets.fd_array[i], Buffer, DataHeader);
 					}
 				}
 			}

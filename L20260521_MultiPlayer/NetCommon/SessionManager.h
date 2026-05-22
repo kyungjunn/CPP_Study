@@ -9,6 +9,7 @@ struct Session
 
 	int X;
 	int Y;
+	char Shape = ' '; // 사람 모양
 
 	bool operator==(const Session& RHS)
 	{
@@ -25,7 +26,7 @@ public:
 	Session* GetSession(int Index);
 	Session* GetSession(const SOCKET& InClientSocket);
 	Session* GetSession(const Session InSession);
-protected:
+//protected:
 	std::vector<Session> SessionList;
 };
 

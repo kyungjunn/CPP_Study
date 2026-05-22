@@ -19,6 +19,6 @@ std::string C2S_Login::ToString()
     rapidjson::Writer<rapidjson::StringBuffer> Writer(Buffer);
     JSONDocument.Accept(Writer);
 
-    return std::string();
+    return Buffer.GetString();
 }
 
