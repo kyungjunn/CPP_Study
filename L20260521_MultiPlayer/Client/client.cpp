@@ -181,6 +181,7 @@ unsigned WINAPI SendThread(void* Argument)
 		//{
 		//	continue;
 		//}
+		// 입력 신호 전까지 대기
 		WaitForSingleObject(hSendEvent, INFINITE);
 
 		if (!IsSendThreadRunning) break;
