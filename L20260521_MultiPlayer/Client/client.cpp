@@ -1,10 +1,7 @@
 ﻿#define _WINSOCK_DEPRECATED_NO_WARNINGS
 
-
-#include "ChatPacket.h"
 #include "NetUtil.h"
 
-#include <winsock2.h>
 #include <Windows.h>
 #include <iostream>
 #include <process.h>
@@ -21,8 +18,7 @@
 
 using namespace std;
 
-char SendBuffer[1024] = { 0, };
-char RecvBuffer[1024] = { 0, };
+char RecvBuffer[65536] = { 0, };
 
 bool IsRecvThreadRunning = true;
 bool IsSendThreadRunning = true;
@@ -36,17 +32,17 @@ SDL_Renderer* MyRenderer;
 
 
 std::mutex SessionLock;
+std::mutex KeyBufferLock;
 
 
 void Render();
-void ProcessPacket(SOCKET ProcessSocket, const char* InBuffer, const Header& InHeader);
+void ProcessPacket(SOCKET ProcessSocket, const char* InBuffer);
 unsigned WINAPI RecvThread(void* Argument);
 unsigned WINAPI SendThread(void* Argument);
 
 //queue
 std::queue<int> KeyBuffer;
 //KeyBuffer -> PacketBuffer
-
 
 int SDL_main(int Argc, char* Argv[])
 {
@@ -70,30 +66,30 @@ int SDL_main(int Argc, char* Argv[])
 	SOCKADDR_IN ServerSockAddr;
 	memset(&ServerSockAddr, 0, sizeof(ServerSockAddr));
 	ServerSockAddr.sin_family = AF_INET;
-	ServerSockAddr.sin_addr.s_addr = inet_addr("127.0.0.1");
+	ServerSockAddr.sin_addr.s_addr = inet_addr("192.168.0.97");
 	ServerSockAddr.sin_port = htons(35000);
 
 	connect(ServerSocket, (SOCKADDR*)&ServerSockAddr, sizeof(ServerSockAddr));
 
 	std::cout << "client connect" << endl;
 
-	C2S_Login LoginData;
-	LoginData.UserID = "junios";
-	LoginData.HashKey = "1as3f356dsd6gyhg";
+	//memory(Data) -> ByteArray(char []) -> Serialize(flatbuffer)
+	flatbuffers::FlatBufferBuilder SendBuilder;
+	auto C2S_LoginData = UserPacket::CreateC2S_Login(
+		SendBuilder,
+		SendBuilder.CreateString("junios"),
+		SendBuilder.CreateString("1as3f356dsd6gyhg")
+	);
 
-	Header LoginHeader;
-	LoginHeader.MakeHeader(static_cast<unsigned short>(LoginData.ToString().length()), EPacketType::C2S_Login);
+	auto UserPacketData = UserPacket::CreatePacketData(
+		SendBuilder,
+		UserPacket::PacketType_C2S_Login,
+		C2S_LoginData.Union()
+	);
 
-	//Login 요청
-	if (SendAll(ServerSocket, (char*)&LoginHeader, HeaderSize) <= 0)
-	{
-		std::cout << "login header Error" << endl;
-	}
+	SendBuilder.Finish(UserPacketData);
 
-	if (SendAll(ServerSocket, LoginData.ToString().c_str(), (int)LoginData.ToString().length()) <= 0)
-	{
-		std::cout << "login data Error" << endl;
-	}
+	SendAll(ServerSocket, SendBuilder);
 
 	HANDLE ThreadHandles[2] = { 0, };
 
@@ -124,19 +120,29 @@ int SDL_main(int Argc, char* Argv[])
 			int KeyCode = 0;
 			if (KeyState[SDL_SCANCODE_W])
 			{
+				lock_guard<std::mutex> KeyLock(KeyBufferLock);
 				KeyBuffer.push('W');
 			}
 			if (KeyState[SDL_SCANCODE_S])
 			{
+				lock_guard<std::mutex> KeyLock(KeyBufferLock);
 				KeyBuffer.push('S');
 			}
 			if (KeyState[SDL_SCANCODE_A])
 			{
+				lock_guard<std::mutex> KeyLock(KeyBufferLock);
 				KeyBuffer.push('A');
 			}
 			if (KeyState[SDL_SCANCODE_D])
 			{
+				lock_guard<std::mutex> KeyLock(KeyBufferLock);
 				KeyBuffer.push('D');
+			}
+			// 색깔 바꾸기
+			if (KeyState[SDL_SCANCODE_C])
+			{
+				lock_guard<std::mutex> KeyLock(KeyBufferLock);
+				KeyBuffer.push('C');
 			}
 		}
 
@@ -202,32 +208,30 @@ void Render()
 
 }
 
-void ProcessPacket(SOCKET ProcessSocket, const char* InBuffer, const Header& InHeader)
+void ProcessPacket(SOCKET ProcessSocket, const char* InBuffer)
 {
-	switch ((EPacketType)InHeader.PacketType)
+	auto UserPacketData = UserPacket::GetPacketData(InBuffer);
+
+	//std::cout << EnumNamePacketType(UserPacketData->data_type()) << std::endl;
+
+	switch (UserPacketData->data_type())
 	{
-	case EPacketType::S2C_Login:
+	case UserPacket::PacketType_S2C_Login:
 	{
-		S2C_Login LoginPacket;
-		LoginPacket.Parse(InBuffer);
-		//std::cout << LoginPacket.ToString() << endl;
-		MyClientID = LoginPacket.ClientSocketID;
+		MyClientID = UserPacketData->data_as_S2C_Login()->client_socket_id();
 	}
 	break;
-	case EPacketType::S2C_Spawn:
+	case UserPacket::PacketType_S2C_Spawn:
 	{
-		S2C_Spawn SpawnData;
-		SpawnData.Parse(InBuffer);
-		//std::cout << SpawnData.ToString() << endl;
-
 		Session InSession;
-		InSession.ClientSocket = SpawnData.ClientSocket;
-		InSession.Shape = SpawnData.Shape;
-		InSession.X = SpawnData.X;
-		InSession.Y = SpawnData.Y;
-		InSession.R = SpawnData.R;
-		InSession.G = SpawnData.G;
-		InSession.B = SpawnData.B;
+		auto SpawnData = UserPacketData->data_as_S2C_Spawn();
+		InSession.ClientSocket = SpawnData->client_socket_id();
+		InSession.Shape = SpawnData->shape();
+		InSession.X = SpawnData->position()->x();
+		InSession.Y = SpawnData->position()->y();
+		InSession.R = SpawnData->color()->r();
+		InSession.G = SpawnData->color()->g();
+		InSession.B = SpawnData->color()->b();
 
 		{
 			lock_guard<std::mutex> lock(SessionLock);
@@ -236,35 +240,42 @@ void ProcessPacket(SOCKET ProcessSocket, const char* InBuffer, const Header& InH
 		//		Render();
 	}
 	break;
-	case EPacketType::S2C_Move:
+	case UserPacket::PacketType_S2C_Move:
 	{
-		S2C_Move MoveData;
-		MoveData.Parse(InBuffer);
-		Session* FindSession = MySessionManager.GetSession(MoveData.ClientSocket);
-		FindSession->X = MoveData.X;
-		FindSession->Y = MoveData.Y;
+		auto MoveData = UserPacketData->data_as_S2C_Move();
 
-		//std::cout << MoveData.ToString() << endl;
-//		Render();
+		SOCKET SocketID = MoveData->client_socket_id();
+		Session* FindSession = MySessionManager.GetSession(SocketID);
+		FindSession->X = MoveData->position()->x();
+		FindSession->Y = MoveData->position()->y();
 	}
 	break;
-	case EPacketType::S2C_Destroy:
+	case UserPacket::PacketType_S2C_Destroy:
 	{
-		S2C_Destroy DestroyPacket;
-		DestroyPacket.Parse(InBuffer);
+		auto DestroyPacket = UserPacketData->data_as_S2C_Destroy();
 
-		Session* FindSession = MySessionManager.GetSession(DestroyPacket.ClientSocket);
-
-		//std::cout << "Quit : " << FindSession->ClientSocket << endl;
-
+		Session* FindSession = MySessionManager.GetSession((SOCKET)DestroyPacket->client_socket_id());
 		{
 			lock_guard<std::mutex> lock(SessionLock);
 			MySessionManager.Delete(*FindSession);
 		}
-		//		Render();
+	}
+	break;
+	case UserPacket::PacketType_S2C_ChangeColor:
+	{
+		auto ColorPacket = UserPacketData->data_as_S2C_ChangeColor();
+		{
+			lock_guard<std::mutex> lock(SessionLock);
+			Session* FindSession = MySessionManager.GetSession((SOCKET)ColorPacket->client_socket_id());
+	
+			FindSession->R = ColorPacket->color()->r();
+			FindSession->G = ColorPacket->color()->g();
+			FindSession->B = ColorPacket->color()->b();
+		}
 	}
 	break;
 	}
+
 }
 
 
@@ -275,29 +286,15 @@ unsigned WINAPI RecvThread(void* Argument)
 
 	while (IsRecvThreadRunning)
 	{
-		unsigned short PacketSize = 0;
-
-		//header
-		Header DataHeader;
-		int RecvBytes = RecvAll(ServerSocket, (char*)&DataHeader, HeaderSize);
-		if (RecvBytes <= 0)
-		{
-			std::cout << "header recv fail " << endl;
-			break;
-		}
-
-		DataHeader.NetworkToHost();
-
 		memset(RecvBuffer, 0, sizeof(RecvBuffer));
-		//data JSON
-		RecvBytes = RecvAll(ServerSocket, RecvBuffer, DataHeader.PacketSize);
+		int RecvBytes = RecvAll(ServerSocket, RecvBuffer);
 		if (RecvBytes <= 0)
 		{
-			std::cout << "Data recv fail " << endl;
+			std::cout << "recv fail " << endl;
 			break;
 		}
 
-		ProcessPacket(ServerSocket, RecvBuffer, DataHeader);
+		ProcessPacket(ServerSocket, RecvBuffer);
 	}
 
 
@@ -306,40 +303,64 @@ unsigned WINAPI RecvThread(void* Argument)
 
 unsigned WINAPI SendThread(void* Argument)
 {
-	//책임은 사용하는 놈이 진다.
 	SOCKET ServerSocket = *(SOCKET*)Argument;
 
 	while (IsSendThreadRunning)
 	{
-
 		if (KeyBuffer.empty())
 		{
-			Sleep(0);
+			YieldProcessor();
+			//Sleep(0);
 			continue;
+
 		}
 
-		C2S_Move MoveData;
-		MoveData.ClientSocket = MyClientID;
-		MoveData.Direction = KeyBuffer.front();
-		KeyBuffer.pop();
 
-		//header
-		Header DataHeader;
-		DataHeader.MakeHeader((int)(MoveData.ToString().length()), EPacketType::C2S_Move);
-		int SentBytes = SendAll(ServerSocket, (char*)&DataHeader, HeaderSize);
-		if (SentBytes <= 0)
+		flatbuffers::FlatBufferBuilder SendBuilder;
+
+		// 계속 쳐다보다가 C 가 들어왔다면
+		if (KeyBuffer.front() == 'C')
 		{
-			std::cout << "header send fail." << endl;
-		}
+			flatbuffers::Offset<UserPacket::C2S_ChangeColor> C2S_ColorData;
+			{
+				lock_guard<std::mutex> KeyLock(KeyBufferLock);
+				C2S_ColorData = UserPacket::CreateC2S_ChangeColor(
+					SendBuilder,
+					(uint16_t)MyClientID
+				);
+				KeyBuffer.pop();
+			}
 
-		//Data
-		SentBytes = SendAll(ServerSocket, MoveData.ToString().c_str(), (int)(MoveData.ToString().length()));
-		if (SentBytes <= 0)
+			auto UserPacketData = UserPacket::CreatePacketData(
+				SendBuilder,
+				UserPacket::PacketType_C2S_ChangeColor,
+				C2S_ColorData.Union()
+			);
+
+			SendBuilder.Finish(UserPacketData);
+		}
+		else
 		{
-			std::cout << "Data send fail." << endl;
+			flatbuffers::Offset<UserPacket::C2S_Move> C2S_MoveData;
+			{
+				lock_guard<std::mutex> KeyLock(KeyBufferLock);
+				C2S_MoveData = UserPacket::CreateC2S_Move(
+					SendBuilder,
+					(uint16_t)MyClientID,
+					KeyBuffer.front()
+				);
+				KeyBuffer.pop();
+			}
+
+			auto UserPacketData = UserPacket::CreatePacketData(
+				SendBuilder,
+				UserPacket::PacketType_C2S_Move,
+				C2S_MoveData.Union()
+			);
+
+			SendBuilder.Finish(UserPacketData);
 		}
-
-
+		SendAll(ServerSocket, SendBuilder);
 	}
 
 	return 0;
