@@ -13,7 +13,9 @@ int main()
 	// Monster 객체 생성
 	// CreateMonsterDirect 함수는 monster.fbs 스키마 기반으로
 	// flatc 컴파일러가 자동 생성한 함수
-	auto monster = CreateMonsterDirect(builder, "Abominable Snowman", 100);
+	auto weapon = CreateWeaponDirect(builder, "망치", 10, Grade_unique);
+
+	auto monster = CreateMonsterDirect(builder, "Abominable Snowman", 100, weapon);
 
 	// FlatBuffer 데이터 생성 완료 처리
 	builder.Finish(monster);
@@ -22,6 +24,8 @@ int main()
 	const uint8_t* flatbuffer = builder.GetBufferPointer();
 
 	// send
+	
+
 
 	// recv
 	// FlatBuffer 데이터를 Monster 객체처럼 읽기
@@ -30,6 +34,8 @@ int main()
 	// 출력해보기
 	cout << snowman->name()->c_str() << endl;
 	cout << snowman->health() << endl;
+
+	
 
 
 	return 0;

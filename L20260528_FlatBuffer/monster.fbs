@@ -1,6 +1,20 @@
+enum Grade : byte {
+	normal,
+	magic,
+	rare, 
+	unique
+}
+
+table Weapon {
+	name:string;
+	damage:float;
+	grade:Grade;
+}
+
 table Monster {
   name:string;
   health:int;
+  weapons:Weapon;
 }
 
 root_type Monster;
