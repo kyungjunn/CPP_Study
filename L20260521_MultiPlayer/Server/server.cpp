@@ -5,7 +5,7 @@
 #include <winsock2.h>
 #include <iostream>
 
-#include "SessionManager.h"
+
 
 
 #pragma comment(lib, "ws2_32")
@@ -41,7 +41,13 @@ void DisconnectSocket(SOCKET DisconnectedSocket, fd_set* Sockets)
 		(uint16_t)ClosedSocket
 	);
 
-	SendBuilder.Finish(DestroyData);
+	auto UserPacketData = UserPacket::CreatePacketData(
+		SendBuilder,
+		UserPacket::PacketType_S2C_Destroy,
+		DestroyData.Union()
+	);
+
+	SendBuilder.Finish(UserPacketData);
 
 	//dangling pointer
 	Session* FindSession = MySessionManager.GetSession(ClosedSocket);
@@ -165,7 +171,7 @@ void ProcessPacket(SOCKET ProcessSocket, const char* InBuffer)
 			&Position
 		);
 
-		std::cout << FindSession->ClientSocket << std::endl;
+		//std::cout << FindSession->ClientSocket << std::endl;
 
 		auto MoveData = UserPacket::CreatePacketData(
 			SendBuilder,
@@ -182,6 +188,47 @@ void ProcessPacket(SOCKET ProcessSocket, const char* InBuffer)
 			if (SentBytes <= 0)
 			{
 				std::cout << "move send fail." << endl;
+			}
+		}
+	}
+	break;
+	case UserPacket::PacketType_C2S_ChangeColor:
+	{
+		flatbuffers::FlatBufferBuilder SendBuilder;
+
+		auto ChangeColorPacket = UserPacketData->data_as_C2S_ChangeColor();
+		Session* ChangeSession = MySessionManager.GetSession((SOCKET)ChangeColorPacket->client_socket_id());
+
+		if (ChangeSession)
+		{
+			ChangeSession->R = rand() % 256;
+			ChangeSession->G = rand() % 256;
+			ChangeSession->B = rand() % 256;
+
+			UserPacket::FColor NewColor(ChangeSession->R, ChangeSession->G, ChangeSession->B);
+
+			auto S2C_ColorData = UserPacket::CreateS2C_ChangeColor(
+				SendBuilder,
+				ChangeColorPacket->client_socket_id(),
+				&NewColor
+			);
+
+			auto UserPacketData = UserPacket::CreatePacketData(
+				SendBuilder,
+				UserPacket::PacketType_S2C_ChangeColor,
+				S2C_ColorData.Union()
+			);
+
+			SendBuilder.Finish(UserPacketData);
+
+			// 변경된 색상 정보 모든 클라이언트에게 멀티캐스트
+			for (auto Receiver : MySessionManager.SessionList)
+			{
+				int SentBytes = SendAll(Receiver.ClientSocket, SendBuilder);
+				if (SentBytes <= 0)
+				{
+					std::cout << "color change send fail." << endl;
+				}
 			}
 		}
 	}
