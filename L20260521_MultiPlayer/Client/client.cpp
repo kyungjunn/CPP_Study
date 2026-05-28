@@ -264,11 +264,10 @@ void ProcessPacket(SOCKET ProcessSocket, const char* InBuffer)
 	case UserPacket::PacketType_S2C_ChangeColor:
 	{
 		auto ColorPacket = UserPacketData->data_as_S2C_ChangeColor();
-
-
-		Session* FindSession = MySessionManager.GetSession((SOCKET)ColorPacket->client_socket_id());
 		{
 			lock_guard<std::mutex> lock(SessionLock);
+			Session* FindSession = MySessionManager.GetSession((SOCKET)ColorPacket->client_socket_id());
+	
 			FindSession->R = ColorPacket->color()->r();
 			FindSession->G = ColorPacket->color()->g();
 			FindSession->B = ColorPacket->color()->b();
@@ -319,6 +318,7 @@ unsigned WINAPI SendThread(void* Argument)
 
 		flatbuffers::FlatBufferBuilder SendBuilder;
 
+		// 계속 쳐다보다가 C 가 들어왔다면
 		if (KeyBuffer.front() == 'C')
 		{
 			flatbuffers::Offset<UserPacket::C2S_ChangeColor> C2S_ColorData;
