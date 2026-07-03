@@ -22,6 +22,7 @@ char RecvBuffer[65536] = { 0, };
 
 bool IsRecvThreadRunning = true;
 bool IsSendThreadRunning = true;
+//bool isLogin = false; // 로그인 상태
 
 //ActorList
 SessionManager MySessionManager;
@@ -44,6 +45,52 @@ unsigned WINAPI SendThread(void* Argument);
 std::queue<int> KeyBuffer;
 //KeyBuffer -> PacketBuffer
 
+void Signup(SOCKET ServerSocket)
+{
+	//Signup
+	flatbuffers::FlatBufferBuilder SignupSendBuilder;
+
+	auto C2S_Signup = UserPacket::CreateC2S_Signup(
+		SignupSendBuilder,
+		SignupSendBuilder.CreateString("junios2"),
+		SignupSendBuilder.CreateString("1234"),
+		SignupSendBuilder.CreateString("asd")
+	);
+
+	auto UserPacketData = UserPacket::CreatePacketData(
+		SignupSendBuilder,
+		UserPacket::PacketType_C2S_Signup,
+		C2S_Signup.Union()
+	);
+
+	SignupSendBuilder.Finish(UserPacketData);
+
+	SendAll(ServerSocket, SignupSendBuilder);
+
+
+	memset(RecvBuffer, 0, sizeof(RecvBuffer));
+	int RecvBytes = RecvAll(ServerSocket, RecvBuffer);
+	if (RecvBytes <= 0)
+	{
+		std::cout << "recv fail " << endl;
+		return;
+	}
+
+	ProcessPacket(ServerSocket, RecvBuffer);
+
+	while (1)
+	{
+		SDL_Event MyEvent;
+		SDL_PollEvent(&MyEvent);
+		if (MyEvent.type == SDL_QUIT)
+		{
+			IsRecvThreadRunning = false;
+			IsSendThreadRunning = false;
+			break;
+		}
+	}
+}
+
 int SDL_main(int Argc, char* Argv[])
 {
 	//Object 동기화(Lock, Lockfree)
@@ -60,7 +107,6 @@ int SDL_main(int Argc, char* Argv[])
 	MyWindow = SDL_CreateWindow("SDL", 100, 100, 640, 480, SDL_WINDOW_OPENGL);
 	MyRenderer = SDL_CreateRenderer(MyWindow, -1, SDL_RENDERER_ACCELERATED || SDL_RENDERER_PRESENTVSYNC || SDL_RENDERER_TARGETTEXTURE);
 
-
 	SOCKET ServerSocket = socket(PF_INET, SOCK_STREAM, IPPROTO_TCP);
 
 	SOCKADDR_IN ServerSockAddr;
@@ -73,12 +119,15 @@ int SDL_main(int Argc, char* Argv[])
 
 	std::cout << "client connect" << endl;
 
+	//회원가입
+	//Signup(ServerSocket);
+
 	//memory(Data) -> ByteArray(char []) -> Serialize(flatbuffer)
 	flatbuffers::FlatBufferBuilder SendBuilder;
 	auto C2S_LoginData = UserPacket::CreateC2S_Login(
 		SendBuilder,
-		SendBuilder.CreateString("junios"),
-		SendBuilder.CreateString("1as3f356dsd6gyhg")
+		SendBuilder.CreateString("kyungjun"),
+		SendBuilder.CreateString("asd123")
 	);
 
 	auto UserPacketData = UserPacket::CreatePacketData(
@@ -88,14 +137,12 @@ int SDL_main(int Argc, char* Argv[])
 	);
 
 	SendBuilder.Finish(UserPacketData);
+	SendAll(ServerSocket, SendBuilder); // 서버에 로그인 요청 전송
 
-	SendAll(ServerSocket, SendBuilder);
-
+	// 네트워크 스레드
 	HANDLE ThreadHandles[2] = { 0, };
-
 	ThreadHandles[0] = (HANDLE)_beginthreadex(0, 0, RecvThread, &ServerSocket, 0, 0);
 	ThreadHandles[1] = (HANDLE)_beginthreadex(0, 0, SendThread, &ServerSocket, 0, 0);
-
 
 	const Uint8* KeyState = SDL_GetKeyboardState(NULL);
 
@@ -117,7 +164,8 @@ int SDL_main(int Argc, char* Argv[])
 				IsSendThreadRunning = false;
 				break;
 			}
-			int KeyCode = 0;
+
+
 			if (KeyState[SDL_SCANCODE_W])
 			{
 				lock_guard<std::mutex> KeyLock(KeyBufferLock);
@@ -146,7 +194,10 @@ int SDL_main(int Argc, char* Argv[])
 			}
 		}
 
+		//if (isLogin)
+
 		Render();
+
 	}
 
 	//blocking
@@ -154,7 +205,7 @@ int SDL_main(int Argc, char* Argv[])
 
 	closesocket(ServerSocket);
 
-	cout << "End Thread" << endl;
+	std::cout << "End Thread" << endl;
 
 	//TerminateThread(ThreadHandles[0], 0);
 	//TerminateThread(ThreadHandles[1], 0);
@@ -218,7 +269,10 @@ void ProcessPacket(SOCKET ProcessSocket, const char* InBuffer)
 	{
 	case UserPacket::PacketType_S2C_Login:
 	{
+		//auto LoginResult = UserPacketData->data_as_S2C_Login();
+		//MyClientID = LoginResult->client_socket_id();
 		MyClientID = UserPacketData->data_as_S2C_Login()->client_socket_id();
+
 	}
 	break;
 	case UserPacket::PacketType_S2C_Spawn:
@@ -245,9 +299,13 @@ void ProcessPacket(SOCKET ProcessSocket, const char* InBuffer)
 		auto MoveData = UserPacketData->data_as_S2C_Move();
 
 		SOCKET SocketID = MoveData->client_socket_id();
-		Session* FindSession = MySessionManager.GetSession(SocketID);
-		FindSession->X = MoveData->position()->x();
-		FindSession->Y = MoveData->position()->y();
+		{
+			lock_guard<std::mutex> lock(SessionLock);
+			Session* FindSession = MySessionManager.GetSession(SocketID);
+			FindSession->X = MoveData->position()->x();
+			FindSession->Y = MoveData->position()->y();
+		}
+
 	}
 	break;
 	case UserPacket::PacketType_S2C_Destroy:
@@ -267,10 +325,19 @@ void ProcessPacket(SOCKET ProcessSocket, const char* InBuffer)
 		{
 			lock_guard<std::mutex> lock(SessionLock);
 			Session* FindSession = MySessionManager.GetSession((SOCKET)ColorPacket->client_socket_id());
-	
+
 			FindSession->R = ColorPacket->color()->r();
 			FindSession->G = ColorPacket->color()->g();
 			FindSession->B = ColorPacket->color()->b();
+		}
+	}
+	break;
+	case UserPacket::PacketType_S2C_Signup:
+	{
+		auto SignupPacket = UserPacketData->data_as_S2C_Signup();
+
+		{
+
 		}
 	}
 	break;
@@ -314,7 +381,6 @@ unsigned WINAPI SendThread(void* Argument)
 			continue;
 
 		}
-
 
 		flatbuffers::FlatBufferBuilder SendBuilder;
 
@@ -360,6 +426,7 @@ unsigned WINAPI SendThread(void* Argument)
 
 			SendBuilder.Finish(UserPacketData);
 		}
+
 		SendAll(ServerSocket, SendBuilder);
 	}
 
