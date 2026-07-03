@@ -55,31 +55,41 @@ void ConnectDB()
 
 bool Login(std::string UserID, std::string Password)
 {
-	// Stored Procesdure를 사용.
-	sql::SQLString Query = "select * from user where user_id = ? and user_pw = ? and is_delete = 'N'";
-
-	// 실행
-	MyPreparedStatement = MyConnection->prepareStatement(Query);
-
-	// 값 바인딩
-	MyPreparedStatement->setString(1, UserID);
-	MyPreparedStatement->setString(2, Password);
-
-	// 쿼리 실행
-	MyResultSet = MyPreparedStatement->executeQuery();
-
-	std::cout << Query << std::endl;
-
-	if (MyResultSet->rowsCount() == 0)
+	std::cout << "ID 변수의 문자열 길이: " << UserID.length() << std::endl;
+	try
 	{
-		//Redis와 같은 캐시 서버에 저장
-		//hash 키 값을 전송
-		std::cout << "아이디 비번이 틀립니다." << std::endl;
-		return false;
+		// Stored Procesdure를 사용.
+		sql::SQLString Query = "select * from user where `user_id` = ? and `user_pw` = ? and is_delete = 'N'";
+
+		// 실행
+		MyPreparedStatement = MyConnection->prepareStatement(Query);
+
+		// 값 바인딩
+		MyPreparedStatement->setString(1, UserID);
+		MyPreparedStatement->setString(2, Password);
+
+		// 쿼리 실행
+		MyResultSet = MyPreparedStatement->executeQuery();
+
+		std::cout << Query << std::endl;
+		std::cout << "[DB_Log] Attempting login for ID: " << UserID << ", PW: " << Password << std::endl;
+
+		if (MyResultSet->rowsCount() == 0)
+		{
+			//Redis와 같은 캐시 서버에 저장
+			//hash 키 값을 전송
+			std::cout << "아이디 비번이 틀립니다." << std::endl;
+			return false;
+		}
+		else
+		{
+			return true;
+		}
 	}
-	else
+	catch (sql::SQLException& Exception)
 	{
-		return true;
+		std::cout << "[DB_Error] " << Exception.what() << std::endl;
+		return false;
 	}
 }
 
@@ -205,8 +215,8 @@ void ProcessPacket(SOCKET ProcessSocket, const char* InBuffer)
 			auto S2C_Login_Data = UserPacket::CreateS2C_Login(
 				SendBuilder,
 				(uint16_t)ProcessSocket,
-				SendBuilder.CreateString("Welcome."),
-				SendBuilder.CreateString("qw3oddpui2"),
+				SendBuilder.CreateString(u8"환영하오."),
+				SendBuilder.CreateString(u8"qw3oddpui2"),
 				true
 			);
 
